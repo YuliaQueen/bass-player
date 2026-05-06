@@ -3,10 +3,11 @@ import request from 'supertest';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import os from 'node:os';
-import { createApp, MAX_SIZE } from './app.js';
+import type { Express } from 'express';
+import { createApp, MAX_SIZE } from './app.ts';
 
-let tabsDir;
-let app;
+let tabsDir: string;
+let app: Express;
 
 beforeEach(async () => {
     tabsDir = await fs.mkdtemp(path.join(os.tmpdir(), 'bass-tabs-test-'));
@@ -39,7 +40,7 @@ describe('GET /api/tabs', () => {
 
         const res = await request(app).get('/api/tabs');
         expect(res.status).toBe(200);
-        expect(res.body.map((t) => t.name).sort()).toEqual(['other.gpx', 'song.gp']);
+        expect(res.body.map((t: { name: string }) => t.name).sort()).toEqual(['other.gpx', 'song.gp']);
     });
 
     it('сортирует по имени с учётом локали', async () => {
@@ -48,7 +49,7 @@ describe('GET /api/tabs', () => {
         await fs.writeFile(path.join(tabsDir, 'Браво.gp'), '');
 
         const res = await request(app).get('/api/tabs');
-        expect(res.body.map((t) => t.name)).toEqual(['Альфа.gp', 'Браво.gp', 'Яндекс.gp']);
+        expect(res.body.map((t: { name: string }) => t.name)).toEqual(['Альфа.gp', 'Браво.gp', 'Яндекс.gp']);
     });
 });
 
@@ -103,7 +104,6 @@ describe('POST /api/tabs', () => {
 
     it('сохраняет имя с кириллицей корректно', async () => {
         const filename = 'Кино-Спокойная.gp';
-        // supertest/superagent отправляет filename в latin1, как реальный браузер
         const res = await request(app).post('/api/tabs').attach('file', Buffer.from('x'), filename);
 
         expect(res.status).toBe(200);
@@ -138,7 +138,6 @@ describe('DELETE /api/tabs/:name', () => {
 
     it('защищает от path traversal в имени', async () => {
         await fs.writeFile(path.join(tabsDir, 'real.gp'), '');
-        // Если бы basename не сработал, удалили бы что-то снаружи tabsDir
         const res = await request(app).delete('/api/tabs/' + encodeURIComponent('../../real.gp'));
         // basename('../../real.gp') === 'real.gp' → удалится файл из нашей tabsDir
         expect(res.status).toBe(200);
@@ -153,12 +152,12 @@ describe('GET /tabs/:name', () => {
             .get('/tabs/song.gp')
             .buffer(true)
             .parse((response, cb) => {
-                const chunks = [];
-                response.on('data', (c) => chunks.push(c));
+                const chunks: Buffer[] = [];
+                response.on('data', (c: Buffer) => chunks.push(c));
                 response.on('end', () => cb(null, Buffer.concat(chunks)));
             });
         expect(res.status).toBe(200);
-        expect(res.body.toString('utf8')).toBe('binary-content');
+        expect((res.body as Buffer).toString('utf8')).toBe('binary-content');
     });
 
     it('возвращает 404 для несуществующего файла', async () => {

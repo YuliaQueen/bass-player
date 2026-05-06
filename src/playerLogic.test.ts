@@ -13,17 +13,15 @@ import {
     findBarIndexByTick,
     barEndTick,
     stepSpeed,
-} from './playerLogic.js';
+    type StorageLike,
+} from './playerLogic.ts';
 
-// Минимальный мок localStorage для тестов
-class MemoryStorage {
-    constructor() {
-        this.data = new Map();
+class MemoryStorage implements StorageLike {
+    private data = new Map<string, string>();
+    getItem(k: string): string | null {
+        return this.data.has(k) ? (this.data.get(k) ?? null) : null;
     }
-    getItem(k) {
-        return this.data.has(k) ? this.data.get(k) : null;
-    }
-    setItem(k, v) {
+    setItem(k: string, v: string): void {
         this.data.set(k, String(v));
     }
 }
@@ -63,7 +61,10 @@ describe('isValidBar', () => {
 });
 
 describe('findBarIndexByTick', () => {
-    const bars = [{ start: 0 }, { start: 1000 }, { start: 2000 }, { start: 3000 }];
+    const bars = [{ start: 0 }, { start: 1000 }, { start: 2000 }, { start: 3000 }].map((b) => ({
+        ...b,
+        calculateDuration: () => 1000,
+    }));
 
     it('возвращает 0 для tick=0', () => {
         expect(findBarIndexByTick(0, bars)).toBe(0);
@@ -109,7 +110,7 @@ describe('settingsKey', () => {
 });
 
 describe('loadSettings / saveSettings', () => {
-    let storage;
+    let storage: MemoryStorage;
     beforeEach(() => {
         storage = new MemoryStorage();
     });
@@ -174,7 +175,6 @@ describe('stepSpeed', () => {
         expect(stepSpeed(SPEED_MAX, SPEED_STEP)).toBe(SPEED_MAX);
     });
     it('округляет до сетки шага (нет накопления флоат-погрешностей)', () => {
-        // 0.6 + 0.05 = 0.65 — в float это 0.6500000000000001, округление чинит
         const v = stepSpeed(0.6, SPEED_STEP);
         expect(v).toBeCloseTo(0.65, 5);
     });

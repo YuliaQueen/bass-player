@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { createApp } from './app.js';
+import { createApp } from './app.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TABS_DIR = path.resolve(__dirname, '..', 'tabs');

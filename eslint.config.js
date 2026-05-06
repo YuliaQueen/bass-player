@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import prettier from 'eslint-config-prettier';
 
@@ -7,6 +8,7 @@ export default [
         ignores: ['node_modules/**', 'dist/**', 'tabs/**', 'public/alphatab/**'],
     },
     js.configs.recommended,
+    ...tseslint.configs.recommended,
     {
         languageOptions: {
             ecmaVersion: 2024,
@@ -17,7 +19,11 @@ export default [
             },
         },
         rules: {
-            'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'warn',
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+            ],
             'no-console': 'off',
             'prefer-const': 'warn',
             eqeqeq: ['warn', 'smart'],
@@ -27,11 +33,11 @@ export default [
         },
     },
     {
-        files: ['server/**/*.js'],
+        files: ['server/**/*.{js,ts}'],
         languageOptions: { globals: globals.node },
     },
     {
-        files: ['src/**/*.js'],
+        files: ['src/**/*.{js,ts}'],
         languageOptions: { globals: globals.browser },
     },
     prettier,

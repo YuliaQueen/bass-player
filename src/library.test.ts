@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stripExt } from './library.js';
+import { stripExt } from './library.ts';
 
 describe('stripExt', () => {
     it('убирает обычное расширение', () => {

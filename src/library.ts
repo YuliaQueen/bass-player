@@ -1,24 +1,37 @@
-import { listTabs, uploadTab, deleteTab } from './api.js';
+import { listTabs, uploadTab, deleteTab, type TabFile } from './api.ts';
 
 const ALLOWED_EXT = /\.(gp|gp3|gp4|gp5|gpx|gp7|gp8)$/i;
 
-export const stripExt = (name) => name.replace(/\.[^./]+$/, '');
+export const stripExt = (name: string): string => name.replace(/\.[^./]+$/, '');
+
+export interface LibraryHandle {
+    refresh(): Promise<void>;
+    getTabs(): TabFile[];
+    setActive(name: string): void;
+}
+
+export interface InitLibraryOptions {
+    listEl: HTMLElement;
+    uploadBtn: HTMLElement;
+    fileInput: HTMLInputElement;
+    dropOverlay: HTMLElement;
+    onSelect: (name: string) => void;
+}
 
 /**
  * Инициализирует UI-сайдбар: список файлов, drag&drop загрузку, кнопку удаления.
- *
- * @param {Object} opts
- * @param {HTMLElement} opts.listEl       — UL для списка
- * @param {HTMLElement} opts.uploadBtn    — кнопка «+ Загрузить»
- * @param {HTMLElement} opts.fileInput    — скрытый input[type=file]
- * @param {HTMLElement} opts.dropOverlay  — оверлей drop-зоны
- * @param {(name: string) => void} opts.onSelect — колбэк при выборе файла
  */
-export const initLibrary = async ({ listEl, uploadBtn, fileInput, dropOverlay, onSelect }) => {
-    let tabs = [];
-    let activeName = null;
+export const initLibrary = async ({
+    listEl,
+    uploadBtn,
+    fileInput,
+    dropOverlay,
+    onSelect,
+}: InitLibraryOptions): Promise<LibraryHandle> => {
+    let tabs: TabFile[] = [];
+    let activeName: string | null = null;
 
-    const render = () => {
+    const render = (): void => {
         listEl.innerHTML = '';
         if (tabs.length === 0) {
             const empty = document.createElement('li');
@@ -50,11 +63,12 @@ export const initLibrary = async ({ listEl, uploadBtn, fileInput, dropOverlay, o
                     // Если удалили активный — открываем первый из оставшихся
                     if (tab.name === activeName) {
                         activeName = null;
-                        if (tabs.length > 0) onSelect(tabs[0].name);
+                        const first = tabs[0];
+                        if (first) onSelect(first.name);
                     }
                     render();
                 } catch (err) {
-                    alert(`Не удалось удалить: ${err.message}`);
+                    alert(`Не удалось удалить: ${(err as Error).message}`);
                 }
             });
 
@@ -64,23 +78,23 @@ export const initLibrary = async ({ listEl, uploadBtn, fileInput, dropOverlay, o
         }
     };
 
-    const refresh = async () => {
+    const refresh = async (): Promise<void> => {
         tabs = await listTabs();
         render();
     };
 
-    const handleFiles = async (files) => {
+    const handleFiles = async (files: FileList | File[]): Promise<string | null> => {
         const valid = [...files].filter((f) => ALLOWED_EXT.test(f.name));
         if (valid.length === 0) return null;
 
-        let lastUploaded = null;
+        let lastUploaded: string | null = null;
         for (const file of valid) {
             try {
                 const res = await uploadTab(file);
                 tabs = res.tabs;
                 lastUploaded = res.uploaded;
             } catch (err) {
-                alert(`Не удалось загрузить «${file.name}»: ${err.message}`);
+                alert(`Не удалось загрузить «${file.name}»: ${(err as Error).message}`);
             }
         }
         render();
@@ -90,6 +104,7 @@ export const initLibrary = async ({ listEl, uploadBtn, fileInput, dropOverlay, o
     // --- кнопка «+ Загрузить» ---
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', async () => {
+        if (!fileInput.files) return;
         const uploaded = await handleFiles(fileInput.files);
         fileInput.value = '';
         if (uploaded) onSelect(uploaded);
@@ -123,7 +138,7 @@ export const initLibrary = async ({ listEl, uploadBtn, fileInput, dropOverlay, o
     return {
         refresh,
         getTabs: () => tabs,
-        setActive: (name) => {
+        setActive: (name: string) => {
             activeName = name;
             render();
         },

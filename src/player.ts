@@ -2,8 +2,10 @@
  * Контролы плеера: Play/Pause/Stop, скорость, громкости, метроном, count-in,
  * loop, индикатор такта, прогресс-бар, hotkeys, сохранение настроек на трек.
  *
- * Чистая логика (поиск такта, settings I/O, формат) — в playerLogic.js, оттуда же тесты.
+ * Чистая логика (поиск такта, settings I/O, формат) — в playerLogic.ts, оттуда же тесты.
  */
+
+import * as alphaTab from '@coderline/alphatab';
 
 import {
     SPEED_STEP,
@@ -16,15 +18,42 @@ import {
     findBarIndexByTick,
     barEndTick as barEndTickFn,
     stepSpeed as stepSpeedFn,
-} from './playerLogic.js';
+    type LoopMode,
+    type MasterBarLike,
+} from './playerLogic.ts';
 
-/**
- * @param {Object} opts
- * @param {alphaTab.AlphaTabApi} opts.api
- * @param {() => string|null}    opts.getCurrentFile
- * @param {Object} opts.controls — DOM-узлы контролов
- */
-export const initPlayer = ({ api, getCurrentFile, controls }) => {
+export interface PlayerControls {
+    playBtn: HTMLButtonElement;
+    stopBtn: HTMLButtonElement;
+    speedSlider: HTMLInputElement;
+    speedValue: HTMLElement;
+    volumeSlider: HTMLInputElement;
+    volumeValue: HTMLElement;
+    metronomeSlider: HTMLInputElement;
+    metronomeValue: HTMLElement;
+    countInCheckbox: HTMLInputElement;
+    loopCheckbox: HTMLInputElement;
+    loopFromInput: HTMLInputElement;
+    loopToInput: HTMLInputElement;
+    loopSectionApplyBtn: HTMLButtonElement;
+    loopSectionResetBtn: HTMLButtonElement;
+    barPosition: HTMLElement;
+    progress: HTMLElement;
+    progressFill: HTMLElement;
+}
+
+export interface InitPlayerOptions {
+    api: alphaTab.AlphaTabApi;
+    getCurrentFile: () => string | null;
+    controls: PlayerControls;
+}
+
+interface PlaybackRange {
+    startTick: number;
+    endTick: number;
+}
+
+export const initPlayer = ({ api, getCurrentFile, controls }: InitPlayerOptions): void => {
     const {
         playBtn,
         stopBtn,
@@ -45,19 +74,19 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         progressFill,
     } = controls;
 
-    let masterBars = [];
+    let masterBars: MasterBarLike[] = [];
     let endTick = 1;
 
     // ---------- loop section ----------
 
-    const isValidBar = (n) => isValidBarFn(n, masterBars.length);
+    const isValidBar = (n: unknown): n is number => isValidBarFn(n, masterBars.length);
 
     /**
      * Включает один из режимов loop. range нужен только для 'section'.
      * jumpToStart=true — прыгнуть на startTick секции (нужно при пользовательском
      * включении, не нужно при восстановлении сохранённой позиции).
      */
-    const setLoopMode = (mode, range = null, jumpToStart = false) => {
+    const setLoopMode = (mode: LoopMode, range: PlaybackRange | null = null, jumpToStart = false): void => {
         switch (mode) {
             case 'off':
                 api.isLooping = false;
@@ -68,6 +97,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
                 api.playbackRange = null;
                 break;
             case 'section':
+                if (!range) return;
                 api.isLooping = true;
                 api.playbackRange = range;
                 // Если текущая позиция вне диапазона — прыгаем в начало секции,
@@ -81,9 +111,9 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         loopSectionApplyBtn.classList.toggle('active', mode === 'section');
     };
 
-    const barEndTick = (idx) => barEndTickFn(idx, masterBars);
+    const barEndTick = (idx: number): number => barEndTickFn(idx, masterBars);
 
-    const applyLoopSection = () => {
+    const applyLoopSection = (): void => {
         if (masterBars.length === 0) return;
         const from = parseInt(loopFromInput.value, 10);
         const to = parseInt(loopToInput.value, 10);
@@ -91,32 +121,29 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
             alert(`Введи диапазон от 1 до ${masterBars.length} (от ≤ до)`);
             return;
         }
-        const range = {
-            startTick: masterBars[from - 1].start,
+        const fromBar = masterBars[from - 1];
+        if (!fromBar) return;
+        const range: PlaybackRange = {
+            startTick: fromBar.start,
             endTick: barEndTick(to - 1),
         };
         setLoopMode('section', range, /* jumpToStart */ true);
-        saveSettings(getCurrentFile(), { loopMode: 'section', loopFrom: from, loopTo: to });
+        saveSettings(getCurrentFile() ?? '', { loopMode: 'section', loopFrom: from, loopTo: to });
     };
 
-    const resetLoopSection = () => {
+    const resetLoopSection = (): void => {
         loopFromInput.value = '';
         loopToInput.value = '';
         setLoopMode('off');
-        saveSettings(getCurrentFile(), { loopMode: 'off', loopFrom: null, loopTo: null });
+        saveSettings(getCurrentFile() ?? '', { loopMode: 'off', loopFrom: null, loopTo: null });
     };
 
     loopSectionApplyBtn.addEventListener('click', applyLoopSection);
     loopSectionResetBtn.addEventListener('click', resetLoopSection);
 
     // ---------- drag по тактам → выделение секции ----------
-    //
-    // Логика: на mousedown запоминаем начальный такт. Если мышь уехала на другой
-    // такт до отпускания — это drag, на mouseup ставим loop. Если осталась на
-    // том же такте — это обычный клик, ничего не делаем (пусть alphaTab сам
-    // отрабатывает seek).
 
-    let dragStartBar = null;
+    let dragStartBar: number | null = null;
     let isDragging = false;
 
     api.beatMouseDown.on((beat) => {
@@ -138,8 +165,8 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
             const endBar = beat.voice.bar.index + 1;
             const from = Math.min(dragStartBar, endBar);
             const to = Math.max(dragStartBar, endBar);
-            loopFromInput.value = from;
-            loopToInput.value = to;
+            loopFromInput.value = String(from);
+            loopToInput.value = String(to);
             applyLoopSection();
         }
         dragStartBar = null;
@@ -148,8 +175,8 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
 
     // ---------- применение настроек при загрузке трека ----------
 
-    const applySettings = () => {
-        const name = getCurrentFile();
+    const applySettings = (): void => {
+        const name = getCurrentFile() ?? '';
         const s = loadSettings(name);
 
         const speed = s.speed ?? 1.0;
@@ -162,31 +189,36 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         api.metronomeVolume = metronome;
         api.countInVolume = countIn ? 1 : 0;
 
-        speedSlider.value = speed;
+        speedSlider.value = String(speed);
         speedValue.textContent = fmtSpeed(speed);
-        volumeSlider.value = volume * 100;
+        volumeSlider.value = String(volume * 100);
         volumeValue.textContent = fmtPercent(volume * 100);
-        metronomeSlider.value = metronome * 100;
+        metronomeSlider.value = String(metronome * 100);
         metronomeValue.textContent = fmtPercent(metronome * 100);
         countInCheckbox.checked = countIn;
 
         // Восстанавливаем loop-режим после того, как стал известен masterBars
-        loopFromInput.max = masterBars.length;
-        loopToInput.max = masterBars.length;
+        loopFromInput.max = String(masterBars.length);
+        loopToInput.max = String(masterBars.length);
         dragStartBar = null;
         isDragging = false;
 
-        const savedMode = s.loopMode ?? 'off';
+        const savedMode: LoopMode = s.loopMode ?? 'off';
         if (
             savedMode === 'section' &&
             isValidBar(s.loopFrom) &&
             isValidBar(s.loopTo) &&
             s.loopFrom <= s.loopTo
         ) {
-            loopFromInput.value = s.loopFrom;
-            loopToInput.value = s.loopTo;
+            const fromBar = masterBars[s.loopFrom - 1];
+            if (!fromBar) {
+                setLoopMode('off');
+                return;
+            }
+            loopFromInput.value = String(s.loopFrom);
+            loopToInput.value = String(s.loopTo);
             setLoopMode('section', {
-                startTick: masterBars[s.loopFrom - 1].start,
+                startTick: fromBar.start,
                 endTick: barEndTick(s.loopTo - 1),
             });
         } else {
@@ -197,7 +229,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
     };
 
     api.scoreLoaded.on((score) => {
-        masterBars = score.masterBars;
+        masterBars = score.masterBars as unknown as MasterBarLike[];
         applySettings();
         barPosition.textContent = `1 / ${masterBars.length}`;
         progressFill.style.width = '0%';
@@ -205,7 +237,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
 
     // tickPosition восстанавливаем после готовности плеера (soundfont загружен и т.д.).
     api.playerReady.on(() => {
-        const s = loadSettings(getCurrentFile());
+        const s = loadSettings(getCurrentFile() ?? '');
         if (typeof s.tickPosition === 'number' && s.tickPosition > 0) {
             api.tickPosition = s.tickPosition;
         }
@@ -239,18 +271,15 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         playBtn.textContent = state === 1 ? '⏸ Pause' : '▶ Play';
         // На паузе — сохраняем позицию, чтобы при перезагрузке возобновиться отсюда
         if (state === 0) {
-            saveSettings(getCurrentFile(), { tickPosition: api.tickPosition });
+            saveSettings(getCurrentFile() ?? '', { tickPosition: api.tickPosition });
         }
     });
 
     window.addEventListener('beforeunload', () => {
-        saveSettings(getCurrentFile(), { tickPosition: api.tickPosition });
+        saveSettings(getCurrentFile() ?? '', { tickPosition: api.tickPosition });
     });
 
     // ---------- слайдеры ----------
-
-    // Используем `input` для мгновенного отклика и `change` для сохранения
-    // (иначе писали бы в localStorage 100 раз за один drag).
 
     speedSlider.addEventListener('input', () => {
         const v = parseFloat(speedSlider.value);
@@ -258,7 +287,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         speedValue.textContent = fmtSpeed(v);
     });
     speedSlider.addEventListener('change', () => {
-        saveSettings(getCurrentFile(), { speed: parseFloat(speedSlider.value) });
+        saveSettings(getCurrentFile() ?? '', { speed: parseFloat(speedSlider.value) });
     });
 
     volumeSlider.addEventListener('input', () => {
@@ -267,7 +296,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         volumeValue.textContent = fmtPercent(v);
     });
     volumeSlider.addEventListener('change', () => {
-        saveSettings(getCurrentFile(), { volume: parseInt(volumeSlider.value, 10) / 100 });
+        saveSettings(getCurrentFile() ?? '', { volume: parseInt(volumeSlider.value, 10) / 100 });
     });
 
     metronomeSlider.addEventListener('input', () => {
@@ -276,18 +305,18 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
         metronomeValue.textContent = fmtPercent(v);
     });
     metronomeSlider.addEventListener('change', () => {
-        saveSettings(getCurrentFile(), { metronome: parseInt(metronomeSlider.value, 10) / 100 });
+        saveSettings(getCurrentFile() ?? '', { metronome: parseInt(metronomeSlider.value, 10) / 100 });
     });
 
     countInCheckbox.addEventListener('change', () => {
         api.countInVolume = countInCheckbox.checked ? 1 : 0;
-        saveSettings(getCurrentFile(), { countIn: countInCheckbox.checked });
+        saveSettings(getCurrentFile() ?? '', { countIn: countInCheckbox.checked });
     });
 
     loopCheckbox.addEventListener('change', () => {
-        const mode = loopCheckbox.checked ? 'track' : 'off';
+        const mode: LoopMode = loopCheckbox.checked ? 'track' : 'off';
         setLoopMode(mode);
-        saveSettings(getCurrentFile(), { loopMode: mode, loopFrom: null, loopTo: null });
+        saveSettings(getCurrentFile() ?? '', { loopMode: mode, loopFrom: null, loopTo: null });
         if (mode === 'track') {
             // Включили loop трека — сбрасываем поля секции
             loopFromInput.value = '';
@@ -297,24 +326,25 @@ export const initPlayer = ({ api, getCurrentFile, controls }) => {
 
     // ---------- hotkeys ----------
 
-    const isTypingTarget = (target) => {
-        if (!target) return false;
+    const isTypingTarget = (target: EventTarget | null): boolean => {
+        if (!target || !(target instanceof HTMLElement)) return false;
         const tag = target.tagName;
         return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
     };
 
-    const goToBar = (idx) => {
+    const goToBar = (idx: number): void => {
         if (masterBars.length === 0) return;
         const clamped = clamp(idx, 0, masterBars.length - 1);
-        api.tickPosition = masterBars[clamped].start;
+        const bar = masterBars[clamped];
+        if (bar) api.tickPosition = bar.start;
     };
 
-    const stepSpeed = (delta) => {
+    const stepSpeed = (delta: number): void => {
         const rounded = stepSpeedFn(api.playbackSpeed, delta);
         api.playbackSpeed = rounded;
-        speedSlider.value = rounded;
+        speedSlider.value = String(rounded);
         speedValue.textContent = fmtSpeed(rounded);
-        saveSettings(getCurrentFile(), { speed: rounded });
+        saveSettings(getCurrentFile() ?? '', { speed: rounded });
     };
 
     document.addEventListener('keydown', (ev) => {

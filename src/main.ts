@@ -1,15 +1,22 @@
 import * as alphaTab from '@coderline/alphatab';
-import { initLibrary } from './library.js';
-import { initPlayer } from './player.js';
+import { initLibrary, type LibraryHandle } from './library.ts';
+import { initPlayer } from './player.ts';
 
 const LAST_TAB_KEY = 'lastTabName';
 
-const statusEl = document.querySelector('#status');
-const setStatus = (text) => {
+/** Helper: querySelector с обязательным результатом и типом. */
+const $ = <T extends HTMLElement>(selector: string): T => {
+    const el = document.querySelector<T>(selector);
+    if (!el) throw new Error(`Element not found: ${selector}`);
+    return el;
+};
+
+const statusEl = $('#status');
+const setStatus = (text: string): void => {
     statusEl.textContent = text;
 };
 
-const api = new alphaTab.AlphaTabApi(document.querySelector('#alphatab'), {
+const api = new alphaTab.AlphaTabApi($('#alphatab'), {
     core: {
         fontDirectory: '/alphatab/font/',
     },
@@ -32,7 +39,10 @@ const api = new alphaTab.AlphaTabApi(document.querySelector('#alphatab'), {
 
 // Подменяем шрифты текстовых элементов на системные с кириллицей.
 // markerFont/wordsFont/titleFont в JSON-конфиге устарели с 1.7.0 — нужно через elementFonts.
-const cyrillicFont = (size, weight = alphaTab.model.FontWeight.Regular) =>
+const cyrillicFont = (
+    size: number,
+    weight: alphaTab.model.FontWeight = alphaTab.model.FontWeight.Regular,
+): alphaTab.model.Font =>
     new alphaTab.model.Font('Arial, Helvetica, sans-serif', size, alphaTab.model.FontStyle.Plain, weight);
 
 const fonts = api.settings.display.resources.elementFonts;
@@ -43,7 +53,7 @@ fonts.set(alphaTab.NotationElement.ScoreSubTitle, cyrillicFont(20));
 api.updateSettings();
 
 let currentTitle = '';
-let currentFile = null;
+let currentFile: string | null = null;
 
 api.scoreLoaded.on((score) => {
     const bassTrack =
@@ -51,6 +61,8 @@ api.scoreLoaded.on((score) => {
             const program = track.playbackInfo.program;
             return program >= 32 && program <= 39;
         }) || score.tracks[0];
+
+    if (!bassTrack) return;
 
     currentTitle = `${score.title || ''} - дорожка: ${bassTrack.name}`.trim();
 
@@ -68,14 +80,15 @@ api.scoreLoaded.on((score) => {
 
 api.renderStarted.on(() => setStatus('рендер…'));
 api.renderFinished.on(() => setStatus(currentTitle));
-api.error.on((error) => {
+api.error.on((error: unknown) => {
     console.error('[alphatab] error', error);
-    setStatus(`ошибка: ${error?.message || error}`);
+    const msg = error instanceof Error ? error.message : String(error);
+    setStatus(`ошибка: ${msg}`);
 });
 
-let lib = null;
+let lib: LibraryHandle | null = null;
 
-const loadTab = (name) => {
+const loadTab = (name: string): void => {
     currentFile = name;
     api.load(`/tabs/${encodeURIComponent(name)}`);
     localStorage.setItem(LAST_TAB_KEY, name);
@@ -83,10 +96,10 @@ const loadTab = (name) => {
 };
 
 lib = await initLibrary({
-    listEl: document.querySelector('#tabs-list'),
-    uploadBtn: document.querySelector('#upload'),
-    fileInput: document.querySelector('#file-input'),
-    dropOverlay: document.querySelector('#drop-overlay'),
+    listEl: $('#tabs-list'),
+    uploadBtn: $('#upload'),
+    fileInput: $<HTMLInputElement>('#file-input'),
+    dropOverlay: $('#drop-overlay'),
     onSelect: loadTab,
 });
 
@@ -94,44 +107,46 @@ initPlayer({
     api,
     getCurrentFile: () => currentFile,
     controls: {
-        playBtn: document.querySelector('#play'),
-        stopBtn: document.querySelector('#stop'),
-        speedSlider: document.querySelector('#speed'),
-        speedValue: document.querySelector('#speed-value'),
-        volumeSlider: document.querySelector('#volume'),
-        volumeValue: document.querySelector('#volume-value'),
-        metronomeSlider: document.querySelector('#metronome'),
-        metronomeValue: document.querySelector('#metronome-value'),
-        countInCheckbox: document.querySelector('#countin'),
-        loopCheckbox: document.querySelector('#loop-track'),
-        loopFromInput: document.querySelector('#loop-from'),
-        loopToInput: document.querySelector('#loop-to'),
-        loopSectionApplyBtn: document.querySelector('#loop-section-apply'),
-        loopSectionResetBtn: document.querySelector('#loop-section-reset'),
-        barPosition: document.querySelector('#bar-position'),
-        progress: document.querySelector('#progress'),
-        progressFill: document.querySelector('#progress-fill'),
+        playBtn: $<HTMLButtonElement>('#play'),
+        stopBtn: $<HTMLButtonElement>('#stop'),
+        speedSlider: $<HTMLInputElement>('#speed'),
+        speedValue: $('#speed-value'),
+        volumeSlider: $<HTMLInputElement>('#volume'),
+        volumeValue: $('#volume-value'),
+        metronomeSlider: $<HTMLInputElement>('#metronome'),
+        metronomeValue: $('#metronome-value'),
+        countInCheckbox: $<HTMLInputElement>('#countin'),
+        loopCheckbox: $<HTMLInputElement>('#loop-track'),
+        loopFromInput: $<HTMLInputElement>('#loop-from'),
+        loopToInput: $<HTMLInputElement>('#loop-to'),
+        loopSectionApplyBtn: $<HTMLButtonElement>('#loop-section-apply'),
+        loopSectionResetBtn: $<HTMLButtonElement>('#loop-section-reset'),
+        barPosition: $('#bar-position'),
+        progress: $('#progress'),
+        progressFill: $('#progress-fill'),
     },
 });
 
-// ===== UI: тогглы сайдбара и табулатуры =====
+// ===== UI: тогглы сайдбара, табулатуры, layout-mode =====
 
-const SIDEBAR_KEY = 'ui.sidebar'; // 'true' / 'false'
-const SHOW_TABS_KEY = 'ui.showTabs'; // 'true' / 'false'
-const LAYOUT_MODE_KEY = 'ui.layoutMode'; // 'horizontal' / 'page'
+const SIDEBAR_KEY = 'ui.sidebar';
+const SHOW_TABS_KEY = 'ui.showTabs';
+const LAYOUT_MODE_KEY = 'ui.layoutMode';
 
-const layoutEl = document.querySelector('#layout');
-const sidebarToggle = document.querySelector('#toggle-sidebar');
-const showTabsCheck = document.querySelector('#show-tabs');
-const layoutSelect = document.querySelector('#layout-mode');
+type LayoutMode = 'horizontal' | 'page';
 
-const setSidebarVisible = (visible) => {
+const layoutEl = $('#layout');
+const sidebarToggle = $<HTMLButtonElement>('#toggle-sidebar');
+const showTabsCheck = $<HTMLInputElement>('#show-tabs');
+const layoutSelect = $<HTMLSelectElement>('#layout-mode');
+
+const setSidebarVisible = (visible: boolean): void => {
     layoutEl.classList.toggle('no-sidebar', !visible);
     sidebarToggle.classList.toggle('active', visible);
     localStorage.setItem(SIDEBAR_KEY, String(visible));
 };
 
-const setShowTabs = (show, rerender = true) => {
+const setShowTabs = (show: boolean, rerender = true): void => {
     showTabsCheck.checked = show;
     api.settings.display.staveProfile = show ? alphaTab.StaveProfile.ScoreTab : alphaTab.StaveProfile.Score;
     api.updateSettings();
@@ -139,7 +154,7 @@ const setShowTabs = (show, rerender = true) => {
     localStorage.setItem(SHOW_TABS_KEY, String(show));
 };
 
-const setLayoutMode = (mode, rerender = true) => {
+const setLayoutMode = (mode: LayoutMode, rerender = true): void => {
     layoutSelect.value = mode;
     api.settings.display.layoutMode =
         mode === 'page' ? alphaTab.LayoutMode.Page : alphaTab.LayoutMode.Horizontal;
@@ -154,12 +169,12 @@ sidebarToggle.addEventListener('click', () => {
 });
 
 showTabsCheck.addEventListener('change', () => setShowTabs(showTabsCheck.checked));
-layoutSelect.addEventListener('change', () => setLayoutMode(layoutSelect.value));
+layoutSelect.addEventListener('change', () => setLayoutMode(layoutSelect.value as LayoutMode));
 
 // Восстанавливаем UI-состояние ДО загрузки трека, чтобы первый рендер был сразу с нужным профилем.
 setSidebarVisible(localStorage.getItem(SIDEBAR_KEY) !== 'false');
 setShowTabs(localStorage.getItem(SHOW_TABS_KEY) !== 'false', /* rerender */ false);
-setLayoutMode(localStorage.getItem(LAYOUT_MODE_KEY) || 'horizontal', /* rerender */ false);
+setLayoutMode((localStorage.getItem(LAYOUT_MODE_KEY) as LayoutMode) || 'horizontal', /* rerender */ false);
 
 // ===== Открываем последний просмотренный, иначе — первый из списка =====
 
