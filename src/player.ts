@@ -21,6 +21,7 @@ import {
     type LoopMode,
     type MasterBarLike,
 } from './playerLogic.ts';
+import { toast, toastError } from './toast.ts';
 
 export interface PlayerControls {
     playBtn: HTMLButtonElement;
@@ -118,7 +119,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }: InitPlayerOptions)
         const from = parseInt(loopFromInput.value, 10);
         const to = parseInt(loopToInput.value, 10);
         if (!isValidBar(from) || !isValidBar(to) || from > to) {
-            alert(`Введи диапазон от 1 до ${masterBars.length} (от ≤ до)`);
+            toastError('Неверный диапазон', `Введи такты от 1 до ${masterBars.length}, от ≤ до`);
             return;
         }
         const fromBar = masterBars[from - 1];
@@ -129,6 +130,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }: InitPlayerOptions)
         };
         setLoopMode('section', range, /* jumpToStart */ true);
         saveSettings(getCurrentFile() ?? '', { loopMode: 'section', loopFrom: from, loopTo: to });
+        toast({ title: 'Loop секции', body: `такты ${from}-${to}`, kind: 'success' });
     };
 
     const resetLoopSection = (): void => {

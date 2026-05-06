@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <!-- Янтарный фон со скругленными углами — гармонирует с акцентом интерфейса -->
+    <rect width="64" height="64" rx="12" fill="#d4a574"/>
+    <!-- Восьмушка: ножка + флажок + овальная головка -->
+    <path d="M28 12 L28 42" stroke="#15161a" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M28 12 C 36 14, 44 18, 44 26 C 44 22, 38 18, 28 18 Z" fill="#15161a"/>
+    <ellipse cx="22" cy="44" rx="9" ry="6.5" fill="#15161a" transform="rotate(-22 22 44)"/>
+</svg>

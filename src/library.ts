@@ -1,4 +1,5 @@
 import { listTabs, uploadTab, deleteTab, type TabFile } from './api.ts';
+import { toast, toastError } from './toast.ts';
 
 const ALLOWED_EXT = /\.(gp|gp3|gp4|gp5|gpx|gp7|gp8)$/i;
 
@@ -35,14 +36,14 @@ export const initLibrary = async ({
         listEl.innerHTML = '';
         if (tabs.length === 0) {
             const empty = document.createElement('li');
-            empty.className = 'tabs-empty';
+            empty.className = 'files-empty';
             empty.textContent = 'Пусто. Перетащи .gp файл сюда.';
             listEl.append(empty);
             return;
         }
         for (const tab of tabs) {
             const li = document.createElement('li');
-            li.className = tab.name === activeName ? 'tab active' : 'tab';
+            li.className = tab.name === activeName ? 'file active' : 'file';
             li.title = tab.name;
 
             const name = document.createElement('span');
@@ -51,7 +52,7 @@ export const initLibrary = async ({
 
             const del = document.createElement('button');
             del.type = 'button';
-            del.className = 'tab-del';
+            del.className = 'file-del';
             del.textContent = '✕';
             del.title = 'Удалить';
             del.addEventListener('click', async (ev) => {
@@ -60,6 +61,7 @@ export const initLibrary = async ({
                 try {
                     const res = await deleteTab(tab.name);
                     tabs = res.tabs;
+                    toast({ title: 'Файл удалён', body: stripExt(tab.name) });
                     // Если удалили активный — открываем первый из оставшихся
                     if (tab.name === activeName) {
                         activeName = null;
@@ -68,7 +70,7 @@ export const initLibrary = async ({
                     }
                     render();
                 } catch (err) {
-                    alert(`Не удалось удалить: ${(err as Error).message}`);
+                    toastError('Не удалось удалить', (err as Error).message);
                 }
             });
 
@@ -85,7 +87,10 @@ export const initLibrary = async ({
 
     const handleFiles = async (files: FileList | File[]): Promise<string | null> => {
         const valid = [...files].filter((f) => ALLOWED_EXT.test(f.name));
-        if (valid.length === 0) return null;
+        if (valid.length === 0) {
+            toastError('Неверный формат', 'Поддерживаются только .gp/.gp3-8 и .gpx');
+            return null;
+        }
 
         let lastUploaded: string | null = null;
         for (const file of valid) {
@@ -93,8 +98,9 @@ export const initLibrary = async ({
                 const res = await uploadTab(file);
                 tabs = res.tabs;
                 lastUploaded = res.uploaded;
+                toast({ title: 'Файл загружен', body: stripExt(res.uploaded) });
             } catch (err) {
-                alert(`Не удалось загрузить «${file.name}»: ${(err as Error).message}`);
+                toastError(`Не загрузить «${file.name}»`, (err as Error).message);
             }
         }
         render();

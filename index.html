@@ -4,45 +4,67 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Bass Tabs Player</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="stylesheet" href="/src/style.css" />
     </head>
     <body>
         <header class="topbar">
-            <button
-                id="toggle-sidebar"
-                type="button"
-                class="topbar-toggle"
-                title="Скрыть/показать библиотеку"
-            >
-                ☰
-            </button>
-            <h1>Bass Tabs Player</h1>
-            <span id="status" class="status">загрузка…</span>
+            <div class="topbar-left">
+                <button
+                    id="toggle-sidebar"
+                    type="button"
+                    class="topbar-toggle"
+                    title="Скрыть/показать библиотеку"
+                    aria-label="Скрыть/показать библиотеку"
+                >
+                    ☰
+                </button>
+                <div class="brand">
+                    <div class="logo-mark" aria-hidden="true"></div>
+                    <div class="brand-text">
+                        <strong>Bass Tabs Player</strong>
+                        <span>Студия для разучивания</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="track-title">
+                <span class="micro-label">Сейчас играет</span>
+                <strong id="status">загрузка…</strong>
+            </div>
+
+            <div class="topbar-right">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span class="muted">Ready</span>
+                <button class="avatar" type="button" title="Профиль (скоро)" disabled>—</button>
+            </div>
         </header>
 
         <div class="controls">
-            <button id="play" type="button" class="btn-primary">▶ Play</button>
-            <button id="stop" type="button" class="btn-icon" title="Stop (в начало)">■</button>
+            <button id="play" type="button" class="button primary">▶ Play</button>
+            <button id="stop" type="button" class="button icon" title="Stop (в начало)" aria-label="Stop">
+                ■
+            </button>
 
-            <div class="control-group">
+            <div class="slider-control">
                 <label for="speed">Скорость</label>
                 <input type="range" id="speed" min="0.25" max="1.5" step="0.05" value="1.0" />
-                <span id="speed-value" class="control-value">1.00x</span>
+                <strong id="speed-value">1.00x</strong>
             </div>
 
-            <div class="control-group">
+            <div class="slider-control">
                 <label for="volume">Громкость</label>
                 <input type="range" id="volume" min="0" max="100" value="80" />
-                <span id="volume-value" class="control-value">80%</span>
+                <strong id="volume-value">80%</strong>
             </div>
 
-            <div class="control-group">
+            <div class="slider-control">
                 <label for="metronome">Метроном</label>
                 <input type="range" id="metronome" min="0" max="100" value="0" />
-                <span id="metronome-value" class="control-value">0%</span>
+                <strong id="metronome-value">0%</strong>
             </div>
 
-            <div class="control-group">
+            <div class="slider-control no-flex">
                 <label for="layout-mode">Вид</label>
                 <select id="layout-mode" class="select-control">
                     <option value="horizontal">Лента</option>
@@ -50,48 +72,57 @@
                 </select>
             </div>
 
-            <label class="checkbox-control"> <input type="checkbox" id="show-tabs" checked /> Табы </label>
+            <label class="check"><input type="checkbox" id="show-tabs" checked /><span></span>Табы</label>
 
-            <label class="checkbox-control"> <input type="checkbox" id="countin" /> Count-in </label>
+            <label class="check"><input type="checkbox" id="countin" /><span></span>Count-in</label>
 
-            <label class="checkbox-control"> <input type="checkbox" id="loop-track" /> Loop трек </label>
+            <label class="check"><input type="checkbox" id="loop-track" /><span></span>Loop трек</label>
 
-            <div class="control-group loop-section">
+            <div class="loop-inputs">
                 <label>Loop секции</label>
-                <input type="number" id="loop-from" min="1" placeholder="от" class="bar-input" />
-                <span class="dash">—</span>
-                <input type="number" id="loop-to" min="1" placeholder="до" class="bar-input" />
+                <input type="number" id="loop-from" min="1" placeholder="от" />
+                <b>—</b>
+                <input type="number" id="loop-to" min="1" placeholder="до" />
                 <button
                     id="loop-section-apply"
                     type="button"
-                    class="btn-icon"
-                    title="Зациклить секцию (или выдели мышью по партитуре)"
+                    class="button secondary small"
+                    title="Зациклить (или выдели мышью)"
                 >
-                    ⟳
+                    Apply
                 </button>
-                <button id="loop-section-reset" type="button" class="btn-icon" title="Сбросить секцию">
+                <button
+                    id="loop-section-reset"
+                    type="button"
+                    class="button icon small"
+                    title="Сбросить"
+                    aria-label="Сбросить"
+                >
                     ×
                 </button>
             </div>
 
-            <span id="bar-position" class="bar-position">— / —</span>
+            <div id="bar-position" class="bar-readout">— / —</div>
         </div>
 
-        <div class="progress" id="progress" title="Кликни для перемотки">
-            <div class="progress-fill" id="progress-fill"></div>
+        <div class="seekbar" id="progress" title="Кликни для перемотки">
+            <span id="progress-fill"></span>
         </div>
 
-        <div class="layout" id="layout">
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <strong>Библиотека</strong>
-                    <button id="upload" type="button" class="btn-small">+ Файл</button>
+        <div class="workspace" id="layout">
+            <aside class="library">
+                <div class="library-head">
+                    <span class="micro-label">Библиотека</span>
+                    <button id="upload" type="button" class="button secondary small">
+                        <span class="plus" aria-hidden="true">+</span> Файл
+                    </button>
                 </div>
-                <ul id="tabs-list" class="tabs-list"></ul>
+                <ul id="tabs-list" class="files"></ul>
+                <div class="sidebar-foot">Перетащи .gp / .gp3 / .gp4 / .gp5 / .gpx / .gp7 / .gp8</div>
             </aside>
 
-            <main class="score-area">
-                <div id="alphatab"></div>
+            <main class="score-stage">
+                <div id="alphatab" class="score-canvas"></div>
             </main>
         </div>
 
@@ -99,6 +130,7 @@
         <div id="drop-overlay" hidden>
             <div class="drop-message">Отпустите .gp файл для загрузки</div>
         </div>
+        <div id="toast-host" class="toast-host" aria-live="polite"></div>
 
         <script type="module" src="/src/main.ts"></script>
     </body>

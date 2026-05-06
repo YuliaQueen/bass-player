@@ -1,6 +1,7 @@
 import * as alphaTab from '@coderline/alphatab';
 import { initLibrary, type LibraryHandle } from './library.ts';
 import { initPlayer } from './player.ts';
+import { toastError } from './toast.ts';
 
 const LAST_TAB_KEY = 'lastTabName';
 
@@ -19,6 +20,10 @@ const setStatus = (text: string): void => {
 const api = new alphaTab.AlphaTabApi($('#alphatab'), {
     core: {
         fontDirectory: '/alphatab/font/',
+        // Отключаем ленивый рендер чанков — он бажный при горизонтальном layout
+        // и resize'ах: at-surface обрезает контент по своей ширине, а внутренние
+        // чанки уезжают за пределы → ноты пропадают по мере прокрутки.
+        enableLazyLoading: false,
     },
     player: {
         enablePlayer: true,
@@ -26,7 +31,7 @@ const api = new alphaTab.AlphaTabApi($('#alphatab'), {
         enableUserInteraction: true,
         soundFont: '/alphatab/soundfont/sonivox.sf3',
         scrollMode: alphaTab.ScrollMode.Continuous,
-        scrollElement: '.score-area',
+        scrollElement: '.score-stage',
         // Курсор фиксируется ~на 30% ширины viewport от левого края.
         scrollOffsetX: -window.innerWidth * 0.3,
     },
@@ -79,11 +84,44 @@ api.scoreLoaded.on((score) => {
 });
 
 api.renderStarted.on(() => setStatus('рендер…'));
-api.renderFinished.on(() => setStatus(currentTitle));
+api.renderFinished.on(() => {
+    setStatus(currentTitle);
+    fixSurfaceWidth();
+});
+
+/**
+ * Workaround для бага alphaTab при LayoutMode.Horizontal: .at-surface получает
+ * width меньше, чем фактическая ширина контента (сумма positioned-чанков),
+ * и за счёт overflow:hidden конец трека обрезается невидимо.
+ * Перевычисляем максимальный right-edge по чанкам и натягиваем surface на него.
+ */
+const fixSurfaceWidth = (): void => {
+    const root = document.querySelector('#alphatab');
+    if (!root) return;
+
+    const surface = root.querySelector<HTMLElement>('.at-surface');
+    const cursors = root.querySelector<HTMLElement>('.at-cursors');
+    if (!surface) return;
+
+    let maxRight = 0;
+    surface.querySelectorAll<HTMLElement>(':scope > div').forEach((chunk) => {
+        const left = parseFloat(chunk.style.left) || 0;
+        const width = parseFloat(chunk.style.width) || 0;
+        if (left + width > maxRight) maxRight = left + width;
+    });
+
+    const currentWidth = parseFloat(surface.style.width) || 0;
+    if (maxRight > currentWidth) {
+        surface.style.width = `${maxRight}px`;
+        surface.style.overflow = 'visible';
+        if (cursors) cursors.style.width = `${maxRight}px`;
+    }
+};
 api.error.on((error: unknown) => {
     console.error('[alphatab] error', error);
     const msg = error instanceof Error ? error.message : String(error);
     setStatus(`ошибка: ${msg}`);
+    toastError('Ошибка alphaTab', msg);
 });
 
 let lib: LibraryHandle | null = null;

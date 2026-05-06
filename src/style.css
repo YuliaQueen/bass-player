@@ -1,27 +1,34 @@
-/* ===== Цветовая палитра ===== */
+/* ============================================================================
+   Дизайн-токены — палитра, типографика, скругления.
+   Соответствуют design-prototype/.
+   ============================================================================ */
 
 :root {
     --bg: #131418;
-    --surface: #1c1e25;
+    --surface-1: #1c1e25;
     --surface-2: #25282f;
     --surface-3: #2d3038;
-    --border: #2f323a;
-    --border-light: #3a3e47;
+    --border: #3a3e47;
+    --border-soft: #2b2e36;
 
-    --fg: #e6e8ed;
-    --fg-muted: #8b909a;
-    --fg-subtle: #5a5e68;
+    --text: #e6e8ed;
+    --muted: #8b909a;
+    --subtle: #5f6470;
 
-    --accent: #d4a574; /* тёплый янтарь — «деревянный» бас */
-    --accent-hover: #e3b687;
+    --accent: #d4a574;
+    --accent-2: #c87f5a;
     --accent-soft: rgba(212, 165, 116, 0.15);
     --accent-text: #15161a;
 
     --danger: #e07b6c;
 
-    --radius: 6px;
-    --radius-sm: 4px;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --radius: 8px;
+    --radius-sm: 6px;
+    --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+
+    /* Цвет «бумаги» партитуры — тёплый off-white вместо чисто белого */
+    --score-paper: #fbfaf7;
+    --score-border: #ded8cc;
 }
 
 * {
@@ -33,69 +40,95 @@ body {
     margin: 0;
     padding: 0;
     background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', system-ui, sans-serif;
+    color: var(--text);
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        'SF Pro Text',
+        system-ui,
+        sans-serif;
     font-size: 13px;
-    line-height: 1.4;
+    line-height: 1.5;
     height: 100%;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Grid вместо flex — более предсказуемо распределяет высоту между фиксированными
+   строками (topbar/controls/seekbar) и расширяемой workspace (1fr). */
 body {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    height: 100vh;
+    min-height: 0;
 }
 
 button,
-input {
-    font-family: inherit;
-    font-size: inherit;
+input,
+select {
+    font: inherit;
     color: inherit;
 }
 
 button {
     cursor: pointer;
-    border: none;
+    border: 0;
     background: none;
 }
 
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
 }
 
-/* ===== Топбар ===== */
+.muted {
+    color: var(--muted);
+}
+
+.micro-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 14px;
+    text-transform: uppercase;
+}
+
+/* ============================================================================
+   Топбар
+   ============================================================================ */
 
 .topbar {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 18px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    justify-content: space-between;
+    height: 58px;
+    padding: 0 20px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
 }
 
-.topbar h1 {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--fg-muted);
+.topbar-left,
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .topbar-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
+    color: var(--muted);
     background: transparent;
-    color: var(--fg-muted);
     border-radius: var(--radius-sm);
     font-size: 16px;
     transition:
@@ -105,136 +138,216 @@ input:focus-visible {
 
 .topbar-toggle:hover {
     background: var(--surface-2);
-    color: var(--fg);
+    color: var(--text);
 }
+
 .topbar-toggle.active {
     background: var(--accent-soft);
     color: var(--accent);
 }
 
-.status {
-    color: var(--fg);
-    font-size: 12px;
-    font-weight: 500;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-/* ===== Панель контролов ===== */
+.logo-mark {
+    width: 30px;
+    height: 30px;
+    background: url('/favicon.svg') center / cover no-repeat;
+    border-radius: 8px;
+    flex: 0 0 auto;
+}
+
+.brand-text strong {
+    display: block;
+    font-size: 14px;
+    line-height: 18px;
+    color: var(--text);
+}
+
+.brand-text span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.track-title {
+    position: absolute;
+    left: 50%;
+    text-align: center;
+    transform: translateX(-50%);
+    max-width: 50%;
+    overflow: hidden;
+}
+
+.track-title .micro-label {
+    display: block;
+}
+
+.track-title strong {
+    display: block;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--text);
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.avatar:disabled {
+    color: var(--subtle);
+    cursor: not-allowed;
+}
+
+/* ============================================================================
+   Панель контролов
+   ============================================================================ */
 
 .controls {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 12px 18px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    background: #191b21;
+    border-bottom: 1px solid var(--border-soft);
     flex-wrap: wrap;
 }
 
 /* --- Кнопки --- */
 
-.btn-primary {
+.button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     height: 34px;
-    padding: 0 18px;
-    background: var(--accent);
-    color: var(--accent-text);
-    border-radius: var(--radius);
-    font-weight: 600;
+    padding: 0 14px;
+    color: var(--text);
+    border-radius: var(--radius-sm);
     font-size: 13px;
     transition:
-        background 0.12s ease,
-        transform 0.05s ease;
-    min-width: 92px;
+        background 0.12s,
+        transform 0.05s;
 }
 
-.btn-primary:hover {
-    background: var(--accent-hover);
-}
-.btn-primary:active {
+.button:active {
     transform: translateY(1px);
 }
 
-.btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 34px;
-    height: 34px;
-    padding: 0 8px;
-    background: var(--surface-2);
-    color: var(--fg);
-    border-radius: var(--radius);
-    font-size: 13px;
-    transition: background 0.12s ease;
+.button.primary {
+    min-width: 88px;
+    color: var(--accent-text);
+    background: var(--accent);
+    font-weight: 700;
 }
 
-.btn-icon:hover {
+.button.primary:hover {
+    background: #e3b687;
+}
+
+.button.secondary {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+}
+
+.button.secondary:hover {
     background: var(--surface-3);
 }
-.btn-icon.active {
+
+.button.icon {
+    width: 34px;
+    padding: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+}
+
+.button.icon:hover {
+    background: var(--surface-3);
+}
+
+.button.icon.active,
+.button.secondary.active {
     background: var(--accent);
     color: var(--accent-text);
-}
-.btn-icon.active:hover {
-    background: var(--accent-hover);
+    border-color: var(--accent);
 }
 
-.btn-small {
-    display: inline-flex;
-    align-items: center;
-    height: 26px;
+.button.small {
+    height: 30px;
     padding: 0 10px;
-    background: var(--surface-2);
-    color: var(--fg);
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    font-weight: 500;
-    transition: background 0.12s ease;
+    font-size: 12px;
 }
 
-.btn-small:hover {
-    background: var(--surface-3);
+.button.icon.small {
+    width: 30px;
+    padding: 0;
 }
 
-/* --- Группы и подписи --- */
+.plus {
+    font-size: 14px;
+    line-height: 1;
+}
 
-.control-group {
+/* --- Слайдеры --- */
+
+.slider-control {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 4px;
+    gap: 9px;
+    min-width: 168px;
 }
 
-.control-group > label {
+.slider-control.no-flex {
+    min-width: 0;
+}
+
+.slider-control label {
+    color: var(--muted);
     font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.6px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--fg-muted);
     cursor: default;
 }
 
-.control-value {
-    min-width: 42px;
+.slider-control strong {
+    min-width: 44px;
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-size: 12px;
-    color: var(--fg);
+    color: var(--text);
 }
-
-/* --- Кастомные range-слайдеры --- */
 
 input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
-    width: 110px;
+    flex: 1;
     height: 4px;
+    min-width: 86px;
     background: var(--surface-3);
-    border-radius: 2px;
+    border-radius: 999px;
     cursor: pointer;
     margin: 0;
 }
@@ -249,11 +362,11 @@ input[type='range']::-webkit-slider-thumb {
     appearance: none;
     width: 14px;
     height: 14px;
-    border-radius: 50%;
+    border-radius: 999px;
     background: var(--accent);
     margin-top: -5px;
-    box-shadow: var(--shadow);
-    transition: transform 0.1s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    transition: transform 0.1s;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
@@ -263,62 +376,64 @@ input[type='range']::-webkit-slider-thumb:hover {
 input[type='range']::-moz-range-track {
     height: 4px;
     background: var(--surface-3);
-    border-radius: 2px;
+    border-radius: 999px;
 }
 
 input[type='range']::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    border-radius: 50%;
+    border-radius: 999px;
     background: var(--accent);
     border: none;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
-/* --- Чекбоксы --- */
+/* --- Чекбоксы (стиль .check из дизайн-токенов) --- */
 
-.checkbox-control {
-    display: flex;
+.check {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--fg);
+    gap: 8px;
+    color: var(--text);
     cursor: pointer;
     user-select: none;
-    padding: 4px 0;
+    font-size: 12px;
 }
 
-.checkbox-control input[type='checkbox'] {
-    -webkit-appearance: none;
-    appearance: none;
+.check input[type='checkbox'] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.check span {
+    position: relative;
     width: 16px;
     height: 16px;
     background: var(--surface-2);
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    cursor: pointer;
-    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 4px;
     transition:
         background 0.12s,
         border-color 0.12s;
 }
 
-.checkbox-control input[type='checkbox']:hover {
+.check:hover span {
     border-color: var(--accent);
 }
 
-.checkbox-control input[type='checkbox']:checked {
+.check input[type='checkbox']:checked + span {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.checkbox-control input[type='checkbox']:checked::after {
+.check input[type='checkbox']:checked + span::after {
     content: '';
     position: absolute;
-    left: 4px;
-    top: 1px;
-    width: 5px;
-    height: 9px;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
     border: solid var(--accent-text);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
@@ -326,42 +441,68 @@ input[type='range']::-moz-range-thumb {
 
 /* --- Loop секции --- */
 
-.loop-section {
-    border-left: 1px solid var(--border);
+.loop-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding-left: 14px;
+    border-left: 1px solid var(--border-soft);
 }
 
-.bar-input {
-    width: 52px;
-    height: 28px;
-    padding: 0 6px;
-    background: var(--surface-2);
-    color: var(--fg);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
+.loop-inputs > label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.loop-inputs input,
+.loop-inputs b {
+    height: 30px;
+    color: var(--text);
     text-align: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.loop-inputs input {
+    width: 56px;
+    padding: 0 6px;
+    font-size: 12px;
     transition: border-color 0.12s;
 }
 
-.bar-input:focus {
+.loop-inputs input:focus {
     outline: none;
     border-color: var(--accent);
 }
 
-.bar-input::-webkit-inner-spin-button {
+.loop-inputs input::-webkit-inner-spin-button {
     opacity: 0.4;
 }
 
-/* --- Select для переключателя вида --- */
+.loop-inputs b {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    padding: 0 4px;
+    background: transparent;
+    border: 0;
+    color: var(--subtle);
+    font-weight: 500;
+}
+
+/* --- Селект (Вид: Лента/Страница) --- */
 
 .select-control {
-    height: 28px;
-    padding: 0 22px 0 8px;
+    height: 30px;
+    padding: 0 22px 0 10px;
     background: var(--surface-2);
-    color: var(--fg);
-    border: 1px solid var(--border-light);
+    color: var(--text);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 12px;
     cursor: pointer;
@@ -378,130 +519,147 @@ input[type='range']::-moz-range-thumb {
     border-color: var(--accent);
 }
 
-.dash {
-    color: var(--fg-subtle);
-    font-weight: 500;
-}
-
 /* --- Индикатор такта --- */
 
-.bar-position {
+.bar-readout {
     margin-left: auto;
-    font-variant-numeric: tabular-nums;
-    color: var(--fg-muted);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 6px 10px;
+    padding: 7px 10px;
+    color: var(--muted);
     background: var(--surface-2);
     border-radius: var(--radius-sm);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
 }
 
-/* ===== Прогресс-бар ===== */
+/* ============================================================================
+   Прогресс-бар (seekbar)
+   ============================================================================ */
 
-.progress {
+.seekbar {
     flex: 0 0 auto;
-    height: 3px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    height: 4px;
+    background: #111216;
     cursor: pointer;
+    transition: height 0.15s;
     position: relative;
-    transition: height 0.15s ease;
 }
 
-.progress:hover {
+.seekbar:hover {
     height: 8px;
 }
 
-.progress-fill {
+.seekbar > span {
+    display: block;
+    width: 0%;
     height: 100%;
     background: var(--accent);
-    width: 0%;
     transition: width 0.1s linear;
 }
 
-/* ===== Layout ===== */
+/* ============================================================================
+   Layout / workspace
+   ============================================================================ */
 
-.layout {
-    display: flex;
-    flex: 1 1 auto;
+/* Grid: фиксированная колонка для библиотеки + расширяемая для партитуры.
+   Height: 100% наследуется из 1fr строки в body — workspace гарантированно заполнен. */
+.workspace {
+    display: grid;
+    grid-template-columns: 278px 1fr;
     min-height: 0;
-}
-
-.layout.no-sidebar .sidebar {
-    display: none;
-}
-
-/* ===== Сайдбар ===== */
-
-.sidebar {
-    flex: 0 0 240px;
-    display: flex;
-    flex-direction: column;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    min-width: 0;
     overflow: hidden;
 }
 
-.sidebar-header {
+/* Явное grid-placement, чтобы при свёрнутом сайдбаре auto-flow не схлопнул
+   score-stage в нулевую колонку. */
+.library {
+    grid-column: 1;
+}
+
+.score-stage {
+    grid-column: 2;
+}
+
+.workspace.no-sidebar {
+    grid-template-columns: 1fr;
+}
+
+.workspace.no-sidebar .library {
+    display: none;
+}
+
+.workspace.no-sidebar .score-stage {
+    grid-column: 1;
+}
+
+/* ============================================================================
+   Сайдбар (библиотека)
+   ============================================================================ */
+
+.library {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 14px;
+    background: var(--surface-1);
+    border-right: 1px solid var(--border-soft);
+    overflow: hidden;
+    min-width: 0;
+}
+
+.library-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
 }
 
-.sidebar-header strong {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-}
-
-.tabs-list {
+.files {
     list-style: none;
     margin: 0;
-    padding: 6px;
+    padding: 0;
     overflow-y: auto;
     flex: 1;
 }
 
-.tab {
+.file {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
-    padding: 8px 10px;
-    margin-bottom: 2px;
+    height: 38px;
+    margin-bottom: 4px;
+    padding: 0 10px;
+    color: var(--text);
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 12px;
-    color: var(--fg);
-    transition: background 0.1s ease;
+    transition: background 0.1s;
 }
 
-.tab:hover {
+.file:hover {
     background: var(--surface-2);
 }
 
-.tab.active {
-    background: var(--accent-soft);
+.file.active {
     color: var(--accent);
+    background: var(--accent-soft);
     font-weight: 500;
 }
 
-.tab .name {
+.file > span.name {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.tab-del {
-    color: var(--fg-subtle);
+.file-del {
+    color: var(--subtle);
     font-size: 14px;
     line-height: 1;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
     opacity: 0;
     transition:
         opacity 0.1s,
@@ -509,48 +667,64 @@ input[type='range']::-moz-range-thumb {
         background 0.1s;
 }
 
-.tab:hover .tab-del,
-.tab.active .tab-del {
+.file:hover .file-del,
+.file.active .file-del {
     opacity: 1;
 }
 
-.tab-del:hover {
+.file-del:hover {
     color: var(--danger);
     background: rgba(224, 123, 108, 0.12);
 }
 
-.tabs-empty {
-    padding: 16px 12px;
-    color: var(--fg-subtle);
+.files-empty {
+    padding: 20px 12px;
+    color: var(--subtle);
     font-size: 12px;
-    font-style: italic;
     text-align: center;
 }
 
-/* ===== Партитура ===== */
-
-.score-area {
-    flex: 1 1 auto;
-    overflow: auto;
-    background: #fff;
-    /* alphaTab будет скроллить именно этот контейнер (см. main.js: scrollElement) */
+.sidebar-foot {
+    flex: 0 0 auto;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    color: var(--subtle);
+    font-size: 11px;
 }
 
-#alphatab {
-    background: #fff;
-    min-height: 100%;
+/* ============================================================================
+   Score stage (сцена с партитурой)
+   ============================================================================ */
+
+.score-stage {
+    /* В Grid-cell автоматически заполняется на ВСЁ доступное место (1fr колонка) —
+       без всяких flex-плясок. Cream-фон гарантированно покрывает весь видимый бокс. */
+    overflow: auto;
+    background: var(--score-paper);
+    min-width: 0;
+    min-height: 0;
+}
+
+.score-canvas {
+    /* Прозрачный фон — cream приходит от .score-stage, который всегда стабильно
+       растянут на весь свободный воркспейс. Так нас не корёжит, что бы alphaTab
+       ни делал с размерами #alphatab внутри. */
+    background: transparent;
     color: #000;
+    width: 100%;
+    min-height: 100%;
     position: relative;
 }
 
-/* Стили курсора alphaTab */
+/* Курсор alphaTab */
 .at-cursor-bar {
     background: rgba(212, 165, 116, 0.22);
 }
 
 .at-cursor-beat {
     background: var(--accent);
-    width: 2px;
+    width: 3px;
     opacity: 0.85;
 }
 
@@ -558,7 +732,9 @@ input[type='range']::-moz-range-thumb {
     background: rgba(212, 165, 116, 0.1);
 }
 
-/* ===== Drop-overlay ===== */
+/* ============================================================================
+   Drop overlay при drag&drop файлов
+   ============================================================================ */
 
 #drop-overlay {
     position: fixed;
@@ -586,7 +762,71 @@ input[type='range']::-moz-range-thumb {
     background: rgba(28, 30, 37, 0.6);
 }
 
-/* ===== Скроллбары ===== */
+/* ============================================================================
+   Toast-уведомления (правый верхний угол)
+   ============================================================================ */
+
+.toast-host {
+    position: fixed;
+    top: 74px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1100;
+    pointer-events: none;
+}
+
+.toast {
+    width: 280px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.32);
+    pointer-events: auto;
+    animation: toast-in 0.18s ease-out;
+}
+
+.toast.toast-error {
+    border-left-color: var(--danger);
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateX(20px);
+    transition:
+        opacity 0.25s,
+        transform 0.25s;
+}
+
+.toast strong {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.toast span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================================================
+   Скроллбары
+   ============================================================================ */
 
 ::-webkit-scrollbar {
     width: 10px;
@@ -605,20 +845,19 @@ input[type='range']::-moz-range-thumb {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--border-light);
+    background: var(--border);
     background-clip: padding-box;
     border: 2px solid transparent;
 }
 
-/* Белый фон партитуры — другой скроллбар */
-.score-area::-webkit-scrollbar-thumb {
-    background: #d0d0d0;
+.score-stage::-webkit-scrollbar-thumb {
+    background: #d0c8b8;
     background-clip: padding-box;
     border: 2px solid transparent;
 }
 
-.score-area::-webkit-scrollbar-thumb:hover {
-    background: #b0b0b0;
+.score-stage::-webkit-scrollbar-thumb:hover {
+    background: #b9b2a5;
     background-clip: padding-box;
     border: 2px solid transparent;
 }
