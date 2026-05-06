@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+    # tests/ исключён — Pest-синтаксис без плагина для PHPStan не парсится
+
+    # Уровень строгости 0..10 (10 = максимум). Для нового проекта 5 разумно.
+    level: 5

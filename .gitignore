@@ -11,3 +11,6 @@ tabs/
 
 # Claude
 .claude/
+
+# Laravel backend имеет свой .gitignore в backend/ — он закрывает vendor/,
+# .env, storage/logs и прочее. Здесь дублировать не надо.

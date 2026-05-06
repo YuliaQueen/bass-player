@@ -10,13 +10,41 @@
 
 ## Запуск
 
+Проект сейчас в переходном состоянии: текущий бэкенд — Express (`server/`),
+параллельно ставится Laravel (`backend/`) для будущей multi-user версии.
+
+### Текущий стек (Express)
+
 ```bash
 npm install
 npm run dev
 ```
 
-Поднимается фронт (Vite, http://localhost:5173) и бэк (Express, :3001) одной
-командой через `concurrently`. Открой http://localhost:5173/.
+Поднимается фронт (Vite, http://localhost:5173) и бэк (Express, :3001).
+
+### Новый стек (Laravel — в разработке)
+
+Нужен Docker Desktop. Локальный PHP/Composer не требуется — всё работает
+в контейнерах через [Laravel Sail](https://laravel.com/docs/13.x/sail).
+
+```bash
+# Бэк (Laravel + Postgres)
+cd backend && ./vendor/bin/sail up -d
+
+# Фронт (Vite на хосте)
+npm run dev:front
+```
+
+- **Laravel:** http://localhost:8001
+- **Postgres:** localhost:5432
+
+Полезные алиасы из контейнера:
+```bash
+sail artisan migrate          # миграции
+sail test                     # Pest-тесты
+sail bin pint                 # форматтер PHP
+sail composer require ...     # composer внутри Sail
+```
 
 ## Откуда брать .gp файлы
 
