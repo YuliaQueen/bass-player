@@ -21,4 +21,8 @@ export default defineConfig({
         // alphaTab использует web workers — пусть Vite не пытается их пре-бандлить
         exclude: ['@coderline/alphatab'],
     },
+    build: {
+        // ES2022 нужен для top-level await в main.ts (initLibrary через await)
+        target: 'es2022',
+    },
 });

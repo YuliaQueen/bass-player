@@ -1,5 +1,7 @@
 # Bass Tabs Player
 
+[![CI](https://github.com/YuliaQueen/bass-player/actions/workflows/ci.yml/badge.svg)](https://github.com/YuliaQueen/bass-player/actions/workflows/ci.yml)
+
 Локальное веб-приложение для разучивания басовых партий из `.gp` файлов
 (Guitar Pro / Songsterr Plus). Партитура отображается горизонтальной лентой
 нот + табов, играет MIDI, бежит курсор по текущей доле, страница сама
