@@ -118,10 +118,12 @@ initPlayer({
 
 const SIDEBAR_KEY = 'ui.sidebar'; // 'true' / 'false'
 const SHOW_TABS_KEY = 'ui.showTabs'; // 'true' / 'false'
+const LAYOUT_MODE_KEY = 'ui.layoutMode'; // 'horizontal' / 'page'
 
 const layoutEl = document.querySelector('#layout');
 const sidebarToggle = document.querySelector('#toggle-sidebar');
 const showTabsCheck = document.querySelector('#show-tabs');
+const layoutSelect = document.querySelector('#layout-mode');
 
 const setSidebarVisible = (visible) => {
     layoutEl.classList.toggle('no-sidebar', !visible);
@@ -137,16 +139,27 @@ const setShowTabs = (show, rerender = true) => {
     localStorage.setItem(SHOW_TABS_KEY, String(show));
 };
 
+const setLayoutMode = (mode, rerender = true) => {
+    layoutSelect.value = mode;
+    api.settings.display.layoutMode =
+        mode === 'page' ? alphaTab.LayoutMode.Page : alphaTab.LayoutMode.Horizontal;
+    api.updateSettings();
+    if (rerender) api.render();
+    localStorage.setItem(LAYOUT_MODE_KEY, mode);
+};
+
 sidebarToggle.addEventListener('click', () => {
     const visible = layoutEl.classList.contains('no-sidebar');
     setSidebarVisible(visible);
 });
 
 showTabsCheck.addEventListener('change', () => setShowTabs(showTabsCheck.checked));
+layoutSelect.addEventListener('change', () => setLayoutMode(layoutSelect.value));
 
 // Восстанавливаем UI-состояние ДО загрузки трека, чтобы первый рендер был сразу с нужным профилем.
 setSidebarVisible(localStorage.getItem(SIDEBAR_KEY) !== 'false');
 setShowTabs(localStorage.getItem(SHOW_TABS_KEY) !== 'false', /* rerender */ false);
+setLayoutMode(localStorage.getItem(LAYOUT_MODE_KEY) || 'horizontal', /* rerender */ false);
 
 // ===== Открываем последний просмотренный, иначе — первый из списка =====
 

@@ -354,6 +354,30 @@ input[type='range']::-moz-range-thumb {
     opacity: 0.4;
 }
 
+/* --- Select для переключателя вида --- */
+
+.select-control {
+    height: 28px;
+    padding: 0 22px 0 8px;
+    background: var(--surface-2);
+    color: var(--fg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='%238b909a' d='M6 8.5L2 4.5h8z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 10px;
+    transition: border-color 0.12s;
+}
+
+.select-control:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 .dash {
     color: var(--fg-subtle);
     font-weight: 500;
