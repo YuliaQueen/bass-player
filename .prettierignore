@@ -1,5 +1,6 @@
 node_modules/
 dist/
-tabs/
 public/alphatab/
+backend/
+design-prototype/
 package-lock.json

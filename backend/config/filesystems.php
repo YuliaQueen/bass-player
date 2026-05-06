@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        // Папка с .gp файлами пользователей. На текущем этапе — общая на сервер
+        // (single-user). В фазе auth+multi-user будет per-user-папка.
+        'tabs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/tabs'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

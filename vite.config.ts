@@ -13,8 +13,9 @@ export default defineConfig({
     ],
     server: {
         proxy: {
-            '/api': 'http://localhost:3001',
-            '/tabs': 'http://localhost:3001',
+            // Laravel в Sail на 8001
+            '/api': 'http://localhost:8001',
+            '/tabs': 'http://localhost:8001',
         },
     },
     optimizeDeps: {

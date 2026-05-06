@@ -5,7 +5,7 @@ import prettier from 'eslint-config-prettier';
 
 export default [
     {
-        ignores: ['node_modules/**', 'dist/**', 'tabs/**', 'public/alphatab/**'],
+        ignores: ['node_modules/**', 'dist/**', 'public/alphatab/**', 'backend/**', 'design-prototype/**'],
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,

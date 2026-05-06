@@ -10,35 +10,25 @@
 
 ## Запуск
 
-Проект сейчас в переходном состоянии: текущий бэкенд — Express (`server/`),
-параллельно ставится Laravel (`backend/`) для будущей multi-user версии.
-
-### Текущий стек (Express)
+Нужен **Docker Desktop**. Локальный PHP/Composer не требуется — бэк работает
+через [Laravel Sail](https://laravel.com/docs/13.x/sail).
 
 ```bash
+# Бэк (Laravel 13 + Postgres 18 в Docker)
+cd backend && ./vendor/bin/sail up -d
+cd ..
+
+# Фронт (Vite на хосте)
 npm install
 npm run dev
 ```
 
-Поднимается фронт (Vite, http://localhost:5173) и бэк (Express, :3001).
-
-### Новый стек (Laravel — в разработке)
-
-Нужен Docker Desktop. Локальный PHP/Composer не требуется — всё работает
-в контейнерах через [Laravel Sail](https://laravel.com/docs/13.x/sail).
-
-```bash
-# Бэк (Laravel + Postgres)
-cd backend && ./vendor/bin/sail up -d
-
-# Фронт (Vite на хосте)
-npm run dev:front
-```
-
-- **Laravel:** http://localhost:8001
+- **Frontend:** http://localhost:5173 (Vite проксит /api и /tabs на бэк)
+- **Backend:** http://localhost:8001
 - **Postgres:** localhost:5432
 
-Полезные алиасы из контейнера:
+Полезные алиасы из Sail:
+
 ```bash
 sail artisan migrate          # миграции
 sail test                     # Pest-тесты
@@ -57,10 +47,11 @@ sail composer require ...     # composer внутри Sail
 Любым из двух способов:
 
 1. **Drag & drop** на окно браузера — overlay подскажет «Отпустите для
-   загрузки», файл сохранится в `tabs/` и автоматически откроется
+   загрузки», файл сохранится в `backend/storage/app/tabs/` и автоматически
+   откроется
 2. **Кнопка `+ Файл`** в сайдбаре — стандартный file picker
-3. **Положить руками** в папку `tabs/` через Finder, потом обновить
-   страницу — файл появится в списке
+3. **Положить руками** в `backend/storage/app/tabs/` через Finder, потом
+   обновить страницу — файл появится в списке
 
 Удаление — крестик `✕` справа от файла в сайдбаре (с подтверждением).
 
@@ -109,17 +100,24 @@ sail composer require ...     # composer внутри Sail
 
 ```
 bass-player/
-├── server/index.js       # Express: list/upload/delete файлов
-├── tabs/                 # реальная папка с .gp файлами (в .gitignore)
-├── public/alphatab/      # ассеты alphaTab (копируются Vite-плагином)
-├── src/
-│   ├── main.js           # инициализация alphaTab + сборка модулей
-│   ├── api.js            # обёртки над fetch
-│   ├── library.js        # сайдбар, drag&drop, upload, delete
-│   ├── player.js         # контролы плеера, hotkeys, loop, settings
+├── backend/                # Laravel 13 (Sail + Postgres)
+│   ├── app/
+│   │   └── Http/Controllers/TabController.php
+│   ├── routes/{api,web}.php
+│   ├── tests/Feature/
+│   ├── storage/app/tabs/   # .gp файлы (gitignored)
+│   ├── compose.yaml        # Sail
+│   └── ...
+├── src/                    # Frontend (TypeScript)
+│   ├── main.ts             # инициализация alphaTab + сборка модулей
+│   ├── api.ts              # обёртки над fetch
+│   ├── library.ts          # сайдбар, drag&drop, upload, delete
+│   ├── player.ts           # контролы плеера, hotkeys, loop, settings
+│   ├── playerLogic.ts      # чистая логика (тестируется)
 │   └── style.css
 ├── index.html
-├── vite.config.js        # копирование font/soundfont, proxy /api → :3001
+├── vite.config.ts          # proxy /api и /tabs → :8001
+├── tsconfig.json
 └── package.json
 ```
 
@@ -129,12 +127,12 @@ bass-player/
   т.д.) — alphaTab по дефолту использует шрифт без кириллицы; перебито
   на Arial через `elementFonts`. Дефис в «1-й» иногда сливается визуально
   с буквой «й» — артефакт SVG-рендеринга, не баг данных
-- **Загруженные файлы лежат в `tabs/` на диске** — папка `.gitignored`,
-  переустановка `node_modules` ничего не съест
-- **Multer 1.x → 2.x** — обновлено, deprecation warning ушёл
-- **Несколько дорожек** — сейчас всегда показывается только басовая (MIDI
-  program 32–39 General MIDI). Если в файле несколько басовых — берётся
-  первая найденная
+- **Загруженные файлы лежат в `backend/storage/app/tabs/`** — содержимое
+  gitignored, переустановка `node_modules` или `vendor/` их не тронет
+- **Single-user режим** — пока общая библиотека на установку. Multi-user
+  с auth добавится в следующей фазе (Laravel Sanctum SPA)
+- **Несколько дорожек в файле** — показывается только басовая (MIDI program
+  32–39 General MIDI). Если несколько басовых — берётся первая
 
 ## Smoke test
 

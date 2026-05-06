@@ -22,6 +22,6 @@
         "allowJs": false,
         "allowImportingTsExtensions": true
     },
-    "include": ["src/**/*.ts", "server/**/*.ts", "vite.config.ts", "vitest.config.ts", "eslint.config.js"],
-    "exclude": ["node_modules", "dist", "tabs"]
+    "include": ["src/**/*.ts", "vite.config.ts", "vitest.config.ts", "eslint.config.js"],
+    "exclude": ["node_modules", "dist", "backend"]
 }
