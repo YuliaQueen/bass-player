@@ -1,0 +1,600 @@
+/* ===== Цветовая палитра ===== */
+
+:root {
+    --bg: #131418;
+    --surface: #1c1e25;
+    --surface-2: #25282f;
+    --surface-3: #2d3038;
+    --border: #2f323a;
+    --border-light: #3a3e47;
+
+    --fg: #e6e8ed;
+    --fg-muted: #8b909a;
+    --fg-subtle: #5a5e68;
+
+    --accent: #d4a574; /* тёплый янтарь — «деревянный» бас */
+    --accent-hover: #e3b687;
+    --accent-soft: rgba(212, 165, 116, 0.15);
+    --accent-text: #15161a;
+
+    --danger: #e07b6c;
+
+    --radius: 6px;
+    --radius-sm: 4px;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    height: 100%;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+button,
+input {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* ===== Топбар ===== */
+
+.topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+}
+
+.topbar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    color: var(--fg-muted);
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    transition:
+        background 0.12s,
+        color 0.12s;
+}
+
+.topbar-toggle:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+}
+.topbar-toggle.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.status {
+    color: var(--fg);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ===== Панель контролов ===== */
+
+.controls {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+/* --- Кнопки --- */
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 18px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 13px;
+    transition:
+        background 0.12s ease,
+        transform 0.05s ease;
+    min-width: 92px;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    background: var(--surface-2);
+    color: var(--fg);
+    border-radius: var(--radius);
+    font-size: 13px;
+    transition: background 0.12s ease;
+}
+
+.btn-icon:hover {
+    background: var(--surface-3);
+}
+.btn-icon.active {
+    background: var(--accent);
+    color: var(--accent-text);
+}
+.btn-icon.active:hover {
+    background: var(--accent-hover);
+}
+
+.btn-small {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    background: var(--surface-2);
+    color: var(--fg);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+    transition: background 0.12s ease;
+}
+
+.btn-small:hover {
+    background: var(--surface-3);
+}
+
+/* --- Группы и подписи --- */
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+}
+
+.control-group > label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    cursor: default;
+}
+
+.control-value {
+    min-width: 42px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--fg);
+}
+
+/* --- Кастомные range-слайдеры --- */
+
+input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 4px;
+    background: var(--surface-3);
+    border-radius: 2px;
+    cursor: pointer;
+    margin: 0;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+    height: 4px;
+    background: transparent;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: -5px;
+    box-shadow: var(--shadow);
+    transition: transform 0.1s ease;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+input[type='range']::-moz-range-track {
+    height: 4px;
+    background: var(--surface-3);
+    border-radius: 2px;
+}
+
+input[type='range']::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    box-shadow: var(--shadow);
+}
+
+/* --- Чекбоксы --- */
+
+.checkbox-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--fg);
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+}
+
+.checkbox-control input[type='checkbox'] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    transition:
+        background 0.12s,
+        border-color 0.12s;
+}
+
+.checkbox-control input[type='checkbox']:hover {
+    border-color: var(--accent);
+}
+
+.checkbox-control input[type='checkbox']:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.checkbox-control input[type='checkbox']:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--accent-text);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* --- Loop секции --- */
+
+.loop-section {
+    border-left: 1px solid var(--border);
+    padding-left: 14px;
+}
+
+.bar-input {
+    width: 52px;
+    height: 28px;
+    padding: 0 6px;
+    background: var(--surface-2);
+    color: var(--fg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    transition: border-color 0.12s;
+}
+
+.bar-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.bar-input::-webkit-inner-spin-button {
+    opacity: 0.4;
+}
+
+.dash {
+    color: var(--fg-subtle);
+    font-weight: 500;
+}
+
+/* --- Индикатор такта --- */
+
+.bar-position {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg-muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+}
+
+/* ===== Прогресс-бар ===== */
+
+.progress {
+    flex: 0 0 auto;
+    height: 3px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    transition: height 0.15s ease;
+}
+
+.progress:hover {
+    height: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* ===== Layout ===== */
+
+.layout {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.layout.no-sidebar .sidebar {
+    display: none;
+}
+
+/* ===== Сайдбар ===== */
+
+.sidebar {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header strong {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+}
+
+.tabs-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 2px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--fg);
+    transition: background 0.1s ease;
+}
+
+.tab:hover {
+    background: var(--surface-2);
+}
+
+.tab.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.tab .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab-del {
+    color: var(--fg-subtle);
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0;
+    transition:
+        opacity 0.1s,
+        color 0.1s,
+        background 0.1s;
+}
+
+.tab:hover .tab-del,
+.tab.active .tab-del {
+    opacity: 1;
+}
+
+.tab-del:hover {
+    color: var(--danger);
+    background: rgba(224, 123, 108, 0.12);
+}
+
+.tabs-empty {
+    padding: 16px 12px;
+    color: var(--fg-subtle);
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+}
+
+/* ===== Партитура ===== */
+
+.score-area {
+    flex: 1 1 auto;
+    overflow: auto;
+    background: #fff;
+    /* alphaTab будет скроллить именно этот контейнер (см. main.js: scrollElement) */
+}
+
+#alphatab {
+    background: #fff;
+    min-height: 100%;
+    color: #000;
+    position: relative;
+}
+
+/* Стили курсора alphaTab */
+.at-cursor-bar {
+    background: rgba(212, 165, 116, 0.22);
+}
+
+.at-cursor-beat {
+    background: var(--accent);
+    width: 2px;
+    opacity: 0.85;
+}
+
+.at-selection div {
+    background: rgba(212, 165, 116, 0.1);
+}
+
+/* ===== Drop-overlay ===== */
+
+#drop-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(19, 20, 24, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#drop-overlay[hidden] {
+    display: none;
+}
+
+.drop-message {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+    padding: 28px 56px;
+    border: 2px dashed var(--accent);
+    border-radius: 12px;
+    background: rgba(28, 30, 37, 0.6);
+}
+
+/* ===== Скроллбары ===== */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}
+
+/* Белый фон партитуры — другой скроллбар */
+.score-area::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}
+
+.score-area::-webkit-scrollbar-thumb:hover {
+    background: #b0b0b0;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}

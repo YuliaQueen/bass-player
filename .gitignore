@@ -1,0 +1,13 @@
+node_modules/
+dist/
+tabs/
+.DS_Store
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Claude
+.claude/

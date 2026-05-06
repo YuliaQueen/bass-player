@@ -1,0 +1,5 @@
+node_modules/
+dist/
+tabs/
+public/alphatab/
+package-lock.json

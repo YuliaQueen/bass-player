@@ -1,0 +1,24 @@
+import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+// Копируем шрифты и soundfont alphaTab в public, чтобы фронт мог их забрать с /alphatab/...
+export default defineConfig({
+    plugins: [
+        viteStaticCopy({
+            targets: [
+                { src: 'node_modules/@coderline/alphatab/dist/font/*', dest: 'alphatab/font' },
+                { src: 'node_modules/@coderline/alphatab/dist/soundfont/*', dest: 'alphatab/soundfont' },
+            ],
+        }),
+    ],
+    server: {
+        proxy: {
+            '/api': 'http://localhost:3001',
+            '/tabs': 'http://localhost:3001',
+        },
+    },
+    optimizeDeps: {
+        // alphaTab использует web workers — пусть Vite не пытается их пре-бандлить
+        exclude: ['@coderline/alphatab'],
+    },
+});
