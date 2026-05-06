@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TabController extends Controller
 {
-    private const ALLOWED_EXT = ['gp', 'gp3', 'gp4', 'gp5', 'gpx', 'gp7', 'gp8'];
+    private const ALLOWED_EXT = ['gp', 'gp3', 'gp4', 'gp5', 'gpx', 'gp7', 'gp8', 'xml', 'musicxml', 'mxl'];
 
     private const DISK = 'tabs';
 

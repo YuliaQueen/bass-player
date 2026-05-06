@@ -71,9 +71,22 @@ it('отвергает файл с недопустимым расширение
 
     $jsonPost(['file' => $file])
         ->assertStatus(422)
-        ->assertJsonPath('errors.file.0', 'Поддерживаются только .gp/.gp3/.gp4/.gp5/.gpx/.gp7/.gp8');
+        ->assertJsonPath(
+            'errors.file.0',
+            'Поддерживаются только .gp/.gp3/.gp4/.gp5/.gpx/.gp7/.gp8 и MusicXML (.xml/.musicxml/.mxl)',
+        );
 
     expect(Storage::disk('tabs')->files())->toBe([]);
+});
+
+it('принимает MusicXML файлы (.xml, .musicxml, .mxl)', function () use ($jsonPost) {
+    foreach (['score.xml', 'symphony.musicxml', 'compressed.mxl'] as $name) {
+        $file = UploadedFile::fake()->createWithContent($name, '<?xml version="1.0"?>');
+        $jsonPost(['file' => $file])
+            ->assertOk()
+            ->assertJsonPath('uploaded', $name);
+        Storage::disk('tabs')->assertExists($name);
+    }
 });
 
 it('защищает от path traversal — берёт только basename', function () use ($jsonPost) {
@@ -85,12 +98,12 @@ it('защищает от path traversal — берёт только basename', 
     Storage::disk('tabs')->assertExists('passwd.gp');
 });
 
-it('отвергает файлы больше 10 МБ', function () use ($jsonPost) {
-    $file = UploadedFile::fake()->create('big.gp', 10241);
+it('отвергает файлы больше 25 МБ', function () use ($jsonPost) {
+    $file = UploadedFile::fake()->create('big.gp', 25601);
 
     $jsonPost(['file' => $file])
         ->assertStatus(422)
-        ->assertJsonPath('errors.file.0', 'Файл больше 10 МБ');
+        ->assertJsonPath('errors.file.0', 'Файл больше 25 МБ');
 });
 
 it('отвечает 422 если файл вообще не приложен', function () use ($jsonPost) {

@@ -148,7 +148,9 @@
                     </button>
                 </div>
                 <ul id="tabs-list" class="files"></ul>
-                <div class="sidebar-foot">Перетащи .gp / .gp3 / .gp4 / .gp5 / .gpx / .gp7 / .gp8</div>
+                <div class="sidebar-foot">
+                    Перетащи .gp / .gp3-8 / .gpx или MusicXML (.xml / .musicxml / .mxl)
+                </div>
             </aside>
 
             <main class="score-stage">
@@ -156,9 +158,15 @@
             </main>
         </div>
 
-        <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7,.gp8" multiple hidden />
+        <input
+            type="file"
+            id="file-input"
+            accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7,.gp8,.xml,.musicxml,.mxl"
+            multiple
+            hidden
+        />
         <div id="drop-overlay" hidden>
-            <div class="drop-message">Отпустите .gp файл для загрузки</div>
+            <div class="drop-message">Отпустите файл для загрузки</div>
         </div>
         <div id="toast-host" class="toast-host" aria-live="polite"></div>
 

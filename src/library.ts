@@ -1,7 +1,7 @@
 import { listTabs, uploadTab, deleteTab, type TabFile } from './api.ts';
 import { toast, toastError } from './toast.ts';
 
-const ALLOWED_EXT = /\.(gp|gp3|gp4|gp5|gpx|gp7|gp8)$/i;
+const ALLOWED_EXT = /\.(gp|gp3|gp4|gp5|gpx|gp7|gp8|xml|musicxml|mxl)$/i;
 
 export const stripExt = (name: string): string => name.replace(/\.[^./]+$/, '');
 
@@ -88,7 +88,7 @@ export const initLibrary = async ({
     const handleFiles = async (files: FileList | File[]): Promise<string | null> => {
         const valid = [...files].filter((f) => ALLOWED_EXT.test(f.name));
         if (valid.length === 0) {
-            toastError('Неверный формат', 'Поддерживаются только .gp/.gp3-8 и .gpx');
+            toastError('Неверный формат', 'Поддерживаются .gp/.gp3-8/.gpx и MusicXML (.xml/.musicxml/.mxl)');
             return null;
         }
 

@@ -20,9 +20,9 @@ class StoreTabRequest extends FormRequest
             'file' => [
                 'required',
                 'file',
-                'max:10240', // 10 MB в КБ
-                // Расширения проверяем по имени; mime для Guitar Pro нестандартный
-                'extensions:gp,gp3,gp4,gp5,gpx,gp7,gp8',
+                'max:25600', // 25 MB в КБ — MusicXML обычно крупнее .gp
+                // Расширения проверяем по имени; mime для Guitar Pro / MusicXML нестандартный
+                'extensions:gp,gp3,gp4,gp5,gpx,gp7,gp8,xml,musicxml,mxl',
             ],
         ];
     }
@@ -35,8 +35,8 @@ class StoreTabRequest extends FormRequest
         return [
             'file.required' => 'Файл не получен',
             'file.file' => 'Загружаемый объект не файл',
-            'file.max' => 'Файл больше 10 МБ',
-            'file.extensions' => 'Поддерживаются только .gp/.gp3/.gp4/.gp5/.gpx/.gp7/.gp8',
+            'file.max' => 'Файл больше 25 МБ',
+            'file.extensions' => 'Поддерживаются только .gp/.gp3/.gp4/.gp5/.gpx/.gp7/.gp8 и MusicXML (.xml/.musicxml/.mxl)',
         ];
     }
 }

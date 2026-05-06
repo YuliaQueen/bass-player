@@ -2,8 +2,9 @@
 
 [![CI](https://github.com/YuliaQueen/bass-player/actions/workflows/ci.yml/badge.svg)](https://github.com/YuliaQueen/bass-player/actions/workflows/ci.yml)
 
-Локальное веб-приложение для разучивания басовых партий из `.gp` файлов
-(Guitar Pro / Songsterr Plus). Партитура отображается горизонтальной лентой
+Локальное веб-приложение для разучивания басовых партий из Guitar Pro
+(`.gp/.gp3-8/.gpx`) и MusicXML (`.xml/.musicxml/.mxl`) файлов.
+Партитура отображается горизонтальной лентой
 нот + табов, играет MIDI, бежит курсор по текущей доле, страница сама
 скроллится. Скорость, метроном, loop секции, сохранение настроек на каждый
 трек — то, что нужно для практики.
@@ -36,11 +37,21 @@ sail bin pint                 # форматтер PHP
 sail composer require ...     # composer внутри Sail
 ```
 
-## Откуда брать .gp файлы
+## Откуда брать файлы
+
+**Guitar Pro:**
 
 - **[Songsterr](https://www.songsterr.com/) Plus** → у любой песни «Download
   Guitar Pro tab»
 - Любой другой источник: `.gp`, `.gp3`, `.gp4`, `.gp5`, `.gpx`, `.gp7`, `.gp8`
+
+**MusicXML:**
+
+- **[MuseScore.com](https://musescore.com/)** → экспорт в MusicXML
+- Любой нотный редактор (Sibelius, Finale, Dorico) — есть экспорт в `.musicxml`
+- `.mxl` — сжатый MusicXML (zip-архив с .xml внутри)
+
+Лимит размера загрузки — 25 МБ.
 
 ## Как добавить песню
 
@@ -105,7 +116,7 @@ bass-player/
 │   │   └── Http/Controllers/TabController.php
 │   ├── routes/{api,web}.php
 │   ├── tests/Feature/
-│   ├── storage/app/tabs/   # .gp файлы (gitignored)
+│   ├── storage/app/tabs/   # .gp и MusicXML файлы (gitignored)
 │   ├── compose.yaml        # Sail
 │   └── ...
 ├── src/                    # Frontend (TypeScript)
