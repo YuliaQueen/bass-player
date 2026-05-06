@@ -16,6 +16,9 @@ export default defineConfig({
             // Laravel в Sail на 8001
             '/api': 'http://localhost:8001',
             '/tabs': 'http://localhost:8001',
+            '/sanctum': 'http://localhost:8001',
+            '/login': 'http://localhost:8001',
+            '/logout': 'http://localhost:8001',
         },
     },
     optimizeDeps: {

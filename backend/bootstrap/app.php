@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // SPA-auth через Sanctum: cookie-based, без Bearer-токенов.
+        // EnsureFrontendRequestsAreStateful включает session+CSRF только для запросов
+        // с фронта (домены из SANCTUM_STATEFUL_DOMAINS).
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

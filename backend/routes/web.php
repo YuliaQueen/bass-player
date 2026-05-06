@@ -10,5 +10,7 @@ Route::get('/', fn () => response()->json([
 ]));
 
 // Отдача .gp файла — вне /api префикса, чтобы alphaTab грузил по короткому URL.
-Route::get('/tabs/{name}', [TabController::class, 'show'])
+// Тоже под auth — иначе любой может скачать чужие файлы.
+Route::middleware(['web', 'auth:sanctum'])
+    ->get('/tabs/{name}', [TabController::class, 'show'])
     ->where('name', '.+');

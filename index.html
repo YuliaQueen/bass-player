@@ -36,7 +36,17 @@
             <div class="topbar-right">
                 <span class="status-dot" aria-hidden="true"></span>
                 <span class="muted">Ready</span>
-                <button class="avatar" type="button" title="Профиль (скоро)" disabled>—</button>
+
+                <div class="user-menu">
+                    <button id="user-button" class="avatar" type="button" title="Профиль">—</button>
+                    <div id="user-dropdown" class="user-dropdown" hidden>
+                        <div class="user-dropdown-name" id="user-name">—</div>
+                        <div class="user-dropdown-email" id="user-email">—</div>
+                        <button id="logout-btn" type="button" class="button secondary small full">
+                            Выйти
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -102,6 +112,26 @@
                 </button>
             </div>
 
+            <div class="mixer-menu">
+                <button id="mixer-button" type="button" class="button secondary small" title="Микшер дорожек">
+                    🎚 Микшер
+                </button>
+                <div id="mixer-dropdown" class="mixer-dropdown" hidden>
+                    <div class="mixer-head">
+                        <span class="micro-label">Микшер дорожек</span>
+                        <button
+                            id="mixer-reset"
+                            type="button"
+                            class="button secondary small"
+                            title="Сбросить громкости и mute"
+                        >
+                            Сброс
+                        </button>
+                    </div>
+                    <ul id="mixer-tracks" class="mixer-tracks"></ul>
+                </div>
+            </div>
+
             <div id="bar-position" class="bar-readout">— / —</div>
         </div>
 
@@ -131,6 +161,51 @@
             <div class="drop-message">Отпустите .gp файл для загрузки</div>
         </div>
         <div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+        <!-- Auth overlay (показывается когда не залогинен) -->
+        <div id="auth-overlay" class="auth-overlay" hidden>
+            <div class="auth-card" data-mode="login">
+                <div class="brand centered">
+                    <div class="logo-mark" aria-hidden="true"></div>
+                    <div class="brand-text">
+                        <strong>Bass Tabs Player</strong>
+                        <span>Студия для разучивания</span>
+                    </div>
+                </div>
+
+                <h2 id="auth-title">Вход</h2>
+                <p class="muted" id="auth-subtitle">Войди в аккаунт, чтобы открыть библиотеку</p>
+
+                <form id="auth-form" class="auth-form" novalidate>
+                    <label class="auth-field" data-field="name" hidden>
+                        <span>Имя</span>
+                        <input type="text" name="name" autocomplete="name" />
+                    </label>
+
+                    <label class="auth-field">
+                        <span>Email</span>
+                        <input type="email" name="email" autocomplete="email" required />
+                    </label>
+
+                    <label class="auth-field">
+                        <span>Пароль</span>
+                        <input type="password" name="password" autocomplete="current-password" required />
+                    </label>
+
+                    <label class="auth-field" data-field="password_confirmation" hidden>
+                        <span>Повтори пароль</span>
+                        <input type="password" name="password_confirmation" autocomplete="new-password" />
+                    </label>
+
+                    <button type="submit" class="button primary full" id="auth-submit">Войти</button>
+
+                    <p class="auth-link">
+                        <span id="auth-toggle-text">Нет аккаунта?</span>
+                        <a href="#" id="auth-toggle">Зарегистрироваться</a>
+                    </p>
+                </form>
+            </div>
+        </div>
 
         <script type="module" src="/src/main.ts"></script>
     </body>

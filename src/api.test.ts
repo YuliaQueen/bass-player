@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { listTabs, uploadTab, deleteTab } from './api.ts';
 
@@ -24,10 +25,12 @@ describe('api wrappers', () => {
     });
 
     describe('listTabs', () => {
-        it('делает GET /api/tabs и возвращает массив', async () => {
+        it('делает GET /api/tabs с credentials и возвращает массив', async () => {
             fetchMock.mockResolvedValueOnce(okJson([{ name: 'a.gp' }, { name: 'b.gp' }]));
             const result = await listTabs();
-            expect(fetchMock).toHaveBeenCalledWith('/api/tabs');
+            const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+            expect(url).toBe('/api/tabs');
+            expect(init.credentials).toBe('include');
             expect(result).toEqual([{ name: 'a.gp' }, { name: 'b.gp' }]);
         });
 

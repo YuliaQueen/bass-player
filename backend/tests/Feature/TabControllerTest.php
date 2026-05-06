@@ -1,10 +1,16 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+uses(RefreshDatabase::class);
+
 beforeEach(function () {
     Storage::fake('tabs');
+    // Все эндпоинты теперь под auth:sanctum — логиним юзера для каждого теста
+    $this->actingAs(User::factory()->create());
 });
 
 // ===== /api/health =====

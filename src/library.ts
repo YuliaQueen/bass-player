@@ -139,7 +139,9 @@ export const initLibrary = async ({
         if (uploaded) onSelect(uploaded);
     });
 
-    await refresh();
+    // Не дёргаем refresh() здесь — может быть 401 (юзер ещё не залогинен).
+    // main.ts вызовет refresh() после успешной авторизации.
+    render();
 
     return {
         refresh,
