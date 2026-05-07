@@ -51,6 +51,12 @@ sail composer require ...     # composer внутри Sail
 - Любой нотный редактор (Sibelius, Finale, Dorico) — есть экспорт в `.musicxml`
 - `.mxl` — сжатый MusicXML (zip-архив с .xml внутри)
 
+⚠️ **Поддержка MusicXML в alphaTab экспериментальная.** Часть файлов
+рендерится без звука, или с октавными ошибками (особенно при
+`<clef-octave-change>`). **Workaround:** в MuseScore выбери
+**Файл → Экспорт → Guitar Pro 5 (.gp5)** — это формат «первого класса»
+для alphaTab, играет всегда стабильно.
+
 Лимит размера загрузки — 25 МБ.
 
 ## Как добавить песню

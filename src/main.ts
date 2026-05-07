@@ -65,11 +65,56 @@ let currentTitle = '';
 let currentFile: string | null = null;
 
 api.scoreLoaded.on((score) => {
+    // MusicXML файлы часто без MIDI-инструкций — alphaTab оставляет volume=0
+    // и program=0 для каждой дорожки. Подставляем разумные дефолты.
+    let fixedSomething = false;
+    score.tracks.forEach((track) => {
+        const info = track.playbackInfo;
+        if (!info.volume || info.volume === 0) {
+            info.volume = 13;
+        }
+        if (info.program === 0 && /bass/i.test(track.name)) {
+            info.program = 33; // Electric Bass (picked) в General MIDI
+        }
+        if (info.isMute) info.isMute = false;
+
+        // Workaround для MusicXML без <staff-details><staff-tuning>:
+        // если в файле есть <technical><string>/<fret>, alphaTab помечает
+        // ноты как stringed и считает MIDI = fret + stringTuning. Без
+        // tuning это даёт MIDI 1-3 — soundfont там пуст, тишина.
+        // Ставим стандартный tuning по количеству используемых струн.
+        // MusicXML reader у alphaTab непоследователен: для одного трека часть нот
+        // помечается как stringed (string/fret из <technical>), часть как piano
+        // (octave/tone из <pitch>). Без правильного staff-tuning stringed-ноты
+        // не воспроизводятся (MIDI=fret+0=инфразвук). Принудительно форсим
+        // piano-режим у всех нот, у которых есть валидный pitch.
+        track.staves.forEach((staff) => {
+            if (staff.stringTuning.tunings.length > 0) return; // honest tab — не трогаем
+
+            staff.bars.forEach((bar) => {
+                bar.voices.forEach((voice) => {
+                    voice.beats.forEach((beat) => {
+                        beat.notes.forEach((note) => {
+                            if (note.string >= 0 && note.octave >= 0 && note.tone >= 0) {
+                                note.string = -1;
+                                note.fret = -1;
+                                fixedSomething = true;
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     const bassTrack =
         score.tracks.find((track) => {
             const program = track.playbackInfo.program;
             return program >= 32 && program <= 39;
-        }) || score.tracks[0];
+        }) ||
+        // Fallback для MusicXML: ищем по имени трека
+        score.tracks.find((track) => /bass/i.test(track.name)) ||
+        score.tracks[0];
 
     if (!bassTrack) return;
 
@@ -86,6 +131,13 @@ api.scoreLoaded.on((score) => {
     setStatus(currentTitle);
     // Громкости отдельных дорожек регулируются через микшер (mixer.ts) —
     // он подписан на тот же scoreLoaded и подтягивает saved per-file state.
+
+    // Пересоздаём MIDI ТОЛЬКО если правили ноты (в основном это MusicXML).
+    // Для .gp файлов не дёргаем — это вызывает побочный баг alphaTab
+    // с метрономом (он начинает хрипеть и ускорять трек).
+    if (fixedSomething) {
+        api.loadMidiForScore();
+    }
 });
 
 api.renderStarted.on(() => setStatus('рендер…'));

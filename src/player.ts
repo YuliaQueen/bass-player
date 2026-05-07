@@ -265,7 +265,27 @@ export const initPlayer = ({ api, getCurrentFile, controls }: InitPlayerOptions)
 
     // ---------- кнопки Play/Stop ----------
 
-    playBtn.addEventListener('click', () => api.playPause());
+    /**
+     * Workaround alphaTab issue #297: если метроном включён ДО Play, плеер
+     * ускоряется и хрипит. Если включить во время play — всё нормально.
+     * Перед стартом обнуляем метроном, потом восстанавливаем через short delay
+     * — внутренне alphaTab воспринимает это как «включили во время play».
+     */
+    const playPauseWithMetronomeFix = (): void => {
+        const isPaused = api.playerState === 0; // PlayerState.Paused
+        const savedMetronome = api.metronomeVolume;
+        if (isPaused && savedMetronome > 0) {
+            api.metronomeVolume = 0;
+            api.playPause();
+            setTimeout(() => {
+                api.metronomeVolume = savedMetronome;
+            }, 150);
+        } else {
+            api.playPause();
+        }
+    };
+
+    playBtn.addEventListener('click', playPauseWithMetronomeFix);
     stopBtn.addEventListener('click', () => api.stop());
 
     // PlayerState: Paused = 0, Playing = 1
@@ -356,7 +376,7 @@ export const initPlayer = ({ api, getCurrentFile, controls }: InitPlayerOptions)
         switch (ev.code) {
             case 'Space':
                 ev.preventDefault();
-                api.playPause();
+                playPauseWithMetronomeFix();
                 break;
             case 'ArrowLeft': {
                 ev.preventDefault();
