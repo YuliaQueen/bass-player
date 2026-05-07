@@ -60,6 +60,11 @@ jobs:
 
             - run: composer install --prefer-dist --no-interaction --no-progress
 
+            - name: Prepare environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+
             - name: Pint (code style)
               run: ./vendor/bin/pint --test
 
